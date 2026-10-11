@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blinkit FC I2 Indore - Department Wise Attendance</title>
+  <style>
+    :root {
+      --blinkit-yellow: #FFC200;
+      --blinkit-dark: #1B1B1B;
+      --blinkit-light: #F7F9FA;
+      --blinkit-green: #037A38;
+      --blinkit-red: #D32F2F;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--blinkit-light); margin: 0; padding: 15px; color: var(--blinkit-dark); }
+    header { background-color: var(--blinkit-dark); color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; border-bottom: 4px solid var(--blinkit-yellow); }
+    h1 { color: var(--blinkit-yellow); margin: 0; font-size: 18px; }
+    h3 { color: #ccc; margin: 4px 0 0 0; font-size: 11px; font-weight: normal; }
+    
+    .nav-tabs { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; }
+    .tab-btn { background: #ddd; border: none; padding: 7px 12px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 12px; }
+    .tab-btn.active { background: var(--blinkit-yellow); color: var(--blinkit-dark); }
+
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+
+    .dashboard-container { max-width: 700px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media(max-width: 600px) { .dashboard-container { grid-template-columns: 1fr; } }
+    .dept-card-home { background: white; border: 2px solid #e0e0e0; border-left: 6px solid var(--blinkit-yellow); padding: 18px; border-radius: 8px; text-align: center; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .dept-card-home:hover { background: var(--blinkit-yellow); }
+
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border-left: 5px solid var(--blinkit-yellow); flex-wrap: wrap; gap: 8px; }
+    .btn-action { background: var(--blinkit-dark); color: white; border: none; padding: 6px 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 11px; }
+    
+    .summary-bar { display: flex; gap: 10px; margin-bottom: 12px; }
+    .sum-box { flex: 1; background: white; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 13px; border-top: 4px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .sum-p { border-top-color: var(--blinkit-green); color: var(--blinkit-green); }
+    .sum-u { border-top-color: var(--blinkit-red); color: var(--blinkit-red); }
+
+    .card { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 12px; border: 1px solid #e0e0e0; }
+    .card h4 { margin-top: 0; color: var(--blinkit-dark); border-bottom: 2px solid var(--blinkit-yellow); padding-bottom: 5px; font-size: 13px; }
+    
+    label { font-weight: 600; display: block; margin-top: 6px; font-size: 11px; color: #555; }
+    input, select { width: 100%; padding: 6px; margin-top: 2px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px; }
+    .btn-main { background: var(--blinkit-yellow); color: var(--blinkit-dark); border: none; padding: 9px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; font-size: 12px; }
+    
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 11px; }
+    th, td { border: 1px solid #ddd; padding: 5px; text-align: center; }
+    th { background-color: var(--blinkit-dark); color: white; }
+    
+    .badge-p { background-color: #e8f5e9; color: var(--blinkit-green); font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 12px; }
+    .badge-u { background-color: #ffebee; color: var(--blinkit-red); font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 12px; }
+    .call-btn { background: #0288D1; color: white; text-decoration: none; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; }
+    .timer-text { color: #d32f2f; font-weight: bold; font-family: monospace; font-size: 12px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>BLINKIT - FULFILLMENT CENTER (I2 INDORE)</h1>
+    <h3>Department Wise Attendance & Live Timer System</h3>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('daily')">📅 Department Wise Attendance</button>
+    <button class="tab-btn" onclick="switchTab('employees')">👥 Add Employees</button>
+    <button class="tab-btn" onclick="switchTab('report')">📊 Report & Excel Download</button>
+  </div>
+
+  <!-- TAB 1: DAILY ATTENDANCE -->
+  <div id="dailyView" class="view-section active">
+    <div id="homeView">
+      <h3 style="text-align: center; margin-bottom: 12px; color: #444; font-size: 13px;">SELECT DEPARTMENT</h3>
+      <div class="dashboard-container">
+        <div class="dept-card-home" onclick="openDept('Inbound')">📦 INBOUND</div>
+        <div class="dept-card-home" onclick="openDept('Outbound')">📤 OUTBOUND</div>
+        <div class="dept-card-home" onclick="openDept('Dispatch')">🚚 DISPATCH</div>
+        <div class="dept-card-home" onclick="openDept('Return')">🔄 RETURN</div>
+        <div class="dept-card-home" onclick="openDept('Putaway')">📥 PUTAWAY</div>
+        <div class="dept-card-home" onclick="openDept('Guard Staff')">🛡️ GUARD STAFF</div>
+      </div>
+    </div>
+
+    <div id="deptView" style="display: none;">
+      <div class="top-bar">
+        <button class="btn-action" onclick="goHome()">⬅ Back to Departments</button>
+        <h2 id="deptTitle" style="margin:0; font-size: 13px;">INBOUND</h2>
+        <div>
+          <label style="display:inline; font-size:11px;">Date: </label>
+          <input type="date" id="attendanceDate" style="width: auto; padding: 3px; display:inline;" onchange="loadAttendanceList()">
+        </div>
+      </div>
+
+      <!-- Counting Summary Bar -->
+      <div class="summary-bar">
+        <div class="sum-box sum-p">🟢 Present (P): <span id="totalPCount">0</span></div>
+        <div class="sum-box sum-u">🔴 Absent (U): <span id="totalUCount">0</span></div>
+      </div>
+
+      <div class="card">
+        <h4 style="color: var(--blinkit-green);" id="deptTableHeading">📋 Attendance List</h4>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name & Contact</th>
+                <th>Status (P / U)</th>
+                <th>Time In</th>
+                <th>Time Out</th>
+                <th>Live Working Timer</th>
+                <th>Save</th>
+              </tr>
+            </thead>
+            <tbody id="attendanceTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: ADD EMPLOYEES -->
+  <div id="employeesView" class="view-section">
+    <div class="card" style="max-width: 500px; margin: 0 auto; background: #fffcf0;">
+      <h4>➕ Add Employee to Department</h4>
+      <label>Select Department:</label>
+      <select id="empDept">
+        <option value="Inbound">Inbound</option>
+        <option value="Outbound">Outbound</option>
+        <option value="Dispatch">Dispatch</option>
+        <option value="Return">Return</option>
+        <option value="Putaway">Putaway</option>
+        <option value="Guard Staff">Guard Staff</option>
+      </select>
+
+      <label>Employee ID:</label>
+      <input type="text" id="newEmpId" placeholder="e.g. BLK-101">
+
+      <label>Full Name:</label>
+      <input type="text" id="newEmpName" placeholder="Employee Name">
+
+      <label>Mobile Number (For Call):</label>
+      <input type="tel" id="newEmpMobile" placeholder="9898XXXXXX">
+
+      <button class="btn-main" onclick="saveNewEmployee()">Save Employee</button>
+    </div>
+
+    <div class="card" style="margin-top: 15px;">
+      <h4>📁 Saved Employees Directory (All Departments)</h4>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Dept</th>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Mobile</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="masterEmpTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: REPORT & EXCEL -->
+  <div id="reportView" class="view-section">
+    <div class="card">
+      <h4>📊 Date-to-Date Report & Excel Download</h4>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center;">
+        <div>
+          <label>From Date:</label>
+          <input type="date" id="startDate">
+        </div>
+        <div>
+          <label>To Date:</label>
+          <input type="date" id="endDate">
+        </div>
+        <div>
+          <label>Department:</label>
+          <select id="reportDept">
+            <option value="ALL">All Departments</option>
+            <option value="Inbound">Inbound</option>
+            <option value="Outbound">Outbound</option>
+            <option value="Dispatch">Dispatch</option>
+            <option value="Return">Return</option>
+            <option value="Putaway">Putaway</option>
+            <option value="Guard Staff">Guard Staff</option>
+          </select>
+        </div>
+        <div style="align-self: flex-end;">
+          <button class="btn-action" style="background: var(--blinkit-green); padding: 8px 12px;" onclick="generateReport()">🔍 Generate</button>
+          <button class="btn-action" style="background: #0288D1; padding: 8px 12px;" onclick="downloadExcel()">📥 Download Excel</button>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Dept</th>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Contact</th>
+              <th>Status</th>
+              <th>Time In</th>
+              <th>Time Out</th>
+              <th>Working Status</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody">
+            <tr><td colspan="9" style="color:#777;">Select dates and click Generate.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentDept = "";
+    let todayStr = new Date().toISOString().slice(0,10);
+    document.getElementById("attendanceDate").value = todayStr;
+    document.getElementById("startDate").value = todayStr;
+    document.getElementById("endDate").value = todayStr;
+
+    let employees = JSON.parse(localStorage.getItem('blinkit_master_employees')) || [];
+    let attendanceRecords = JSON.parse(localStorage.getItem('blinkit_daily_attendance')) || [];
+    let timerInterval = null;
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+      if(tab === 'daily') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        document.getElementById('dailyView').classList.add('active');
+      } else if(tab === 'employees') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('employeesView').classList.add('active');
+        renderMasterEmployees();
+      } else {
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.getElementById('reportView').classList.add('active');
+      }
+    }
+
+    function openDept(dept) {
+      currentDept = dept;
+      document.getElementById("deptTitle").innerText = dept.toUpperCase() + " DEPARTMENT";
+      document.getElementById("deptTableHeading").innerText = "📋 " + dept + " Department Attendance List";
+      document.getElementById("homeView").style.display = "none";
+      document.getElementById("deptView").style.display = "block";
+      loadAttendanceList();
+    }
+
+    function goHome() {
+      if(timerInterval) clearInterval(timerInterval);
+      document.getElementById("homeView").style.display = "block";
+      document.getElementById("deptView").style.display = "none";
+    }
+
+    function saveNewEmployee() {
+      let dept = document.getElementById("empDept").value;
+      let empId = document.getElementById("newEmpId").value.trim();
+      let name = document.getElementById("newEmpName").value.trim();
+      let mobile = document.getElementById("newEmpMobile").value.trim();
+
+      if(!empId || !name) {
+        alert("Please enter Employee ID and Name");
+        return;
+      }
+
+      if(employees.some(e => e.empId === empId)) {
+        alert("Employee ID already exists!");
+        return;
+      }
+
+      employees.push({ dept, empId, name, mobile });
+      localStorage.setItem('blinkit_master_employees', JSON.stringify(employees));
+      
+      alert("Employee added successfully to " + dept + "!");
+      document.getElementById("newEmpId").value = "";
+      document.getElementById("newEmpName").value = "";
+      document.getElementById("newEmpMobile").value = "";
+      renderMasterEmployees();
+    }
+
+    function renderMasterEmployees() {
+      let tbody = document.getElementById("masterEmpTableBody");
+      tbody.innerHTML = "";
+
+      employees.forEach((emp, index) => {
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><b>${emp.dept}</b></td>
+          <td>${emp.empId}</td>
+          <td>${emp.name}</td>
+          <td>${emp.mobile || '-'}</td>
+          <td><button style="background:var(--blinkit-red); color:white; border:none; padding:3px 6px; border-radius:3px; cursor:pointer;" onclick="deleteEmployee(${index})">Delete</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if(employees.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="color:#777;">No employees added yet.</td></tr>`;
+      }
+    }
+
+    function deleteEmployee(index) {
+      if(confirm("Are you sure to delete this employee?")) {
+        employees.splice(index, 1);
+        localStorage.setItem('blinkit_master_employees', JSON.stringify(employees));
+        renderMasterEmployees();
+      }
+    }
+
+    function loadAttendanceList() {
+      if(timerInterval) clearInterval(timerInterval);
+      let date = document.getElementById("attendanceDate").value;
+      let tbody = document.getElementById("attendanceTableBody");
+      tbody.innerHTML = "";
+
+      // Sirf usi department ke employees filter honge
+      let deptEmployees = employees.filter(e => e.dept === currentDept);
+      let pCount = 0, uCount = 0;
+
+      deptEmployees.forEach(emp => {
+        let recordKey = `${date}_${currentDept}_${emp.empId}`;
+        let existing = attendanceRecords.find(r => r.key === recordKey) || {
+          status: "P",
+          timeIn: "09:00",
+          timeOut: "18:00",
+          timestampIn: new Date().setHours(9,0,0,0)
+        };
+
+        if(existing.status === "P") pCount++;
+        else uCount++;
+
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><b>${emp.empId}</b></td>
+          <td>
+            <b>${emp.name}</b><br>
+            ${emp.mobile ? `<a class="call-btn" href="tel:${emp.mobile}">📞 ${emp.mobile}</a>` : ''}
+          </td>
+          <td>
+            <select id="status_${emp.empId}" onchange="updateCounts()">
+              <option value="P" ${existing.status === 'P' ? 'selected' : ''}>P (Present)</option>
+              <option value="U" ${existing.status === 'U' ? 'selected' : ''}>U (Absent)</option>
+            </select>
+          </td>
+          <td><input type="time" id="in_${emp.empId}" value="${existing.timeIn}" style="width:80px;"></td>
+          <td><input type="time" id="out_${emp.empId}" value="${existing.timeOut}" style="width:80px;"></td>
+          <td><span class="timer-text" id="timer_${emp.empId}">00h 00m 00s</span></td>
+          <td><button class="btn-action" style="background:var(--blinkit-green);" onclick="saveRowAttendance('${emp.empId}', '${emp.name}', '${emp.mobile}')">Save</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("totalPCount").innerText = pCount;
+      document.getElementById("totalUCount").innerText = uCount;
+
+      if(deptEmployees.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="color:#777;">No employees found in ${currentDept}. Please add employees in 'Add Employees' tab selecting ${currentDept}.</td></tr>`;
+      } else {
+        startLiveTimers();
+      }
+    }
+
+    function updateCounts() {
+      let deptEmployees = employees.filter(e => e.dept === currentDept);
+      let pCount = 0, uCount = 0;
+      deptEmployees.forEach(emp => {
+        let st = document.getElementById(`status_${emp.empId}`).value;
+        if(st === 'P') pCount++;
+        else uCount++;
+      });
+      document.getElementById("totalPCount").innerText = pCount;
+      document.getElementById("totalUCount").innerText = uCount;
+    }
+
+    function startLiveTimers() {
+      timerInterval = setInterval(() => {
+        let deptEmployees = employees.filter(e => e.dept === currentDept);
+        let date = document.getElementById("attendanceDate").value;
+
+        deptEmployees.forEach(emp => {
+          let recordKey = `${date}_${currentDept}_${emp.empId}`;
+          let existing = attendanceRecords.find(r => r.key === recordKey);
+          let timerSpan = document.getElementById(`timer_${emp.empId}`);
+          let statusSelect = document.getElementById(`status_${emp.empId}`);
+
+          if(timerSpan) {
+            if(statusSelect && statusSelect.value === 'P') {
+              let startTime;
+              if(existing && existing.timestampIn) {
+                startTime = existing.timestampIn;
+              } else {
+                let timeInVal = document.getElementById(`in_${emp.empId}`).value || "09:00";
+                let [h, m] = timeInVal.split(':').map(Number);
+                let d = new Date();
+                d.setHours(h, m, 0, 0);
+                startTime = d.getTime();
+              }
+              let now = new Date().getTime();
+              let diff = now - startTime;
+              if(diff > 0) {
+                let hrs = Math.floor(diff / (1000 * 60 * 60));
+                let mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                let secs = Math.floor((diff % (1000 * 60)) / 1000);
+                timerSpan.innerText = `${hrs}h ${mins}m ${secs}s`;
+              } else {
+                timerSpan.innerText = "00h 00m 00s";
+              }
+            } else {
+              timerSpan.innerText = "Absent (U)";
+            }
+          }
+        });
+      }, 1000);
+    }
+
+    function saveRowAttendance(empId, name, mobile) {
+      let date = document.getElementById("attendanceDate").value;
+      let status = document.getElementById(`status_${empId}`).value;
+      let timeIn = document.getElementById(`in_${empId}`).value;
+      let timeOut = document.getElementById(`out_${empId}`).value;
+
+      let [inH, inM] = timeIn.split(':').map(Number);
+      let todayObj = new Date();
+      todayObj.setHours(inH, inM, 0, 0);
+      let timestampIn = todayObj.getTime();
+
+      let recordKey = `${date}_${currentDept}_${empId}`;
+      let record = {
+        key: recordKey,
+        date,
+        dept: currentDept,
+        empId,
+        name,
+        mobile,
+        status,
+        timeIn,
+        timeOut,
+        timestampIn
+      };
+
+      let idx = attendanceRecords.findIndex(r => r.key === recordKey);
+      if(idx >= 0) {
+        attendanceRecords[idx] = record;
+      } else {
+        attendanceRecords.push(record);
+      }
+
+      localStorage.setItem('blinkit_daily_attendance', JSON.stringify(attendanceRecords));
+      alert(`Saved: ${name} in ${currentDept} marked as ${status === 'P' ? 'Present (P)' : 'Absent (U)'}`);
+      loadAttendanceList();
+    }
+
+    function generateReport() {
+      let sDate = document.getElementById("startDate").value;
+      let eDate = document.getElementById("endDate").value;
+      let dept = document.getElementById("reportDept").value;
+      let tbody = document.getElementById("reportTableBody");
+      tbody.innerHTML = "";
+
+      let filtered = attendanceRecords.filter(r => {
+        let matchDept = (dept === "ALL" || r.dept === dept);
+        let matchDate = (r.date >= sDate && r.date <= eDate);
+        return matchDept && matchDate;
+      });
+
+      filtered.forEach(r => {
+        let badge = r.status === 'P' ? `<span class="badge-p">P</span>` : `<span class="badge-u">U</span>`;
+        let callLink = r.mobile ? `<a class="call-btn" href="tel:${r.mobile}">📞 ${r.mobile}</a>` : '-';
+
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${r.date}</td>
+          <td><b>${r.dept}</b></td>
+          <td>${r.empId}</td>
+          <td>${r.name}</td>
+          <td>${callLink}</td>
+          <td>${badge}</td>
+          <td>${r.timeIn}</td>
+          <td>${r.timeOut}</td>
+          <td>${r.status === 'P' ? 'Working Active' : 'Absent'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if(filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" style="color:#777;">No records found.</td></tr>`;
+      }
+    }
+
+    function downloadExcel() {
+      let sDate = document.getElementById("startDate").value;
+      let eDate = document.getElementById("endDate").value;
+      let dept = document.getElementById("reportDept").value;
+
+      let filtered = attendanceRecords.filter(r => {
+        let matchDept = (dept === "ALL" || r.dept === dept);
+        let matchDate = (r.date >= sDate && r.date <= eDate);
+        return matchDept && matchDate;
+      });
+
+      if(filtered.length === 0) {
+        alert("No data available to download.");
+        return;
+      }
+
+      let csv = "Date,Department,Emp ID,Name,Mobile,Status,Time In,Time Out\n";
+      filtered.forEach(r => {
+        csv += `"${r.date}","${r.dept}","${r.empId}","${r.name}","${r.mobile}","${r.status}","${r.timeIn}","${r.timeOut}"\n`;
+      });
+
+      let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      let link = document.createElement("a");
+      let url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Blinkit_Attendance_${sDate}_to_${eDate}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
