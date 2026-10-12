@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blinkit FC I2 Indore - Department Attendance System</title>
+  <title>Blinkit FC I2 Indore - Live Multi-Device Attendance System</title>
   
   <!-- SheetJS Library Excel Export -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Firebase SDK (Live Cloud Database) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <style>
     :root {
@@ -22,7 +26,7 @@
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: var(--blinkit-light); margin: 0; padding: 12px; color: var(--blinkit-dark); }
 
-    /* BRAND HEADER WITH EXACT LOGO COLOURS */
+    /* BRAND HEADER WITH LOGOS */
     header {
       background: var(--blinkit-yellow);
       color: var(--blinkit-dark);
@@ -34,11 +38,18 @@
       border-bottom: 4px solid var(--blinkit-dark);
     }
 
+    .brand-logos-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .brand-logo-img { height: 32px; object-fit: contain; border-radius: 4px; }
+    .eternal-logo-img { height: 26px; object-fit: contain; background: #121212; padding: 2px 8px; border-radius: 4px; }
     .brand-logo-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    
     .brand-logo-text { font-size: 48px; font-weight: 900; letter-spacing: -2px; line-height: 1; color: #121212; user-select: none; }
     .brand-logo-text span { color: #037A38; }
-    .brand-cart-icon { font-size: 28px; margin-top: 2px; }
 
     .header-subtitle {
       margin-top: 8px;
@@ -49,6 +60,17 @@
       padding: 4px 14px;
       border-radius: 20px;
       display: inline-block;
+    }
+
+    .server-status {
+      font-size: 11px;
+      font-weight: bold;
+      color: #037A38;
+      background: #E8F5E9;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: inline-block;
+      margin-top: 6px;
     }
 
     /* NAV TABS */
@@ -91,11 +113,15 @@
 
   <!-- HEADER -->
   <header>
+    <div class="brand-logos-top">
+      <img src="1000579236.jpg" alt="Eternal Logo" class="eternal-logo-img">
+      <img src="1000578098.jpg" alt="Blinkit Logo" class="brand-logo-img">
+    </div>
     <div class="brand-logo-container">
       <div class="brand-logo-text">blink<span>it</span></div>
-      <div class="brand-cart-icon"></div>
     </div>
-    <div class="header-subtitle">FC I2 INDORE — Department Attendance & Custom Shift System</div>
+    <div class="header-subtitle">FC I2 INDORE — Multi-Device Live Attendance System</div>
+    <div><span class="server-status" id="serverStatusText"> Live Server Connected (Auto Sync Active)</span></div>
   </header>
 
   <!-- NAVIGATION TABS -->
@@ -216,7 +242,7 @@
     </div>
 
     <div class="card" style="margin-top: 15px;">
-      <h4> Master Directory & Shift Controls</h4>
+      <h4> Master Directory & Shift Controls</h4>
       <div class="table-container">
         <table>
           <thead>
@@ -284,19 +310,53 @@
   </div>
 
   <script>
+    // --- FIREBASE CONFIGURATION ---
+    // Niche apni Firebase Project Details Dalein (Instructions niche diye hain)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef"
+    };
+
+    // Firebase Init
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
     const departmentsList = ['Inbound', 'Outbound', 'Dispatch', 'Return', 'Putaway', 'Guard Staff'];
-    let employees = JSON.parse(localStorage.getItem('blinkit_employees_v8')) || [];
-    let attendanceLogs = JSON.parse(localStorage.getItem('blinkit_attendance_v8')) || {};
+    let employees = [];
+    let attendanceLogs = {};
     let currentSelectedDept = '';
 
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('attendanceDate').value = today;
     document.getElementById('reportDate').value = today;
 
-    function saveData() {
-      localStorage.setItem('blinkit_employees_v8', JSON.stringify(employees));
-      localStorage.setItem('blinkit_attendance_v8', JSON.stringify(attendanceLogs));
+    // --- REALTIME LISTENERS (DUSTRI SYSTEM PAR AUTOMATIC SYNC) ---
+    db.ref('employees').on('value', snapshot => {
+      employees = snapshot.val() || [];
       renderHomeDepartmentCards();
+      renderMasterEmployees();
+      if (currentSelectedDept) renderAttendanceTable();
+    });
+
+    db.ref('attendance').on('value', snapshot => {
+      attendanceLogs = snapshot.val() || {};
+      renderHomeDepartmentCards();
+      if (currentSelectedDept) renderAttendanceTable();
+    });
+
+    function saveEmployeesToCloud() {
+      db.ref('employees').set(employees);
+    }
+
+    function saveAttendanceToCloud() {
+      db.ref('attendance').set(attendanceLogs);
     }
 
     function switchTab(viewId, btn) {
@@ -335,7 +395,7 @@
 
       const emp = employees.find(e => e.id.toLowerCase() === empId.toLowerCase() && e.dept === currentSelectedDept);
       if (!emp) {
-        alert(` Yeh Employee ID "${currentSelectedDept}" vibhag me maujood nahi hai!`);
+        alert(` Yeh Employee ID "${currentSelectedDept}" vibhag me maujood nahi hai!`);
         return;
       }
 
@@ -368,16 +428,14 @@
         record.timeOut = timeString;
       }
 
-      saveData();
-      renderAttendanceTable();
+      saveAttendanceToCloud();
     }
 
     function resetAttendance(empId) {
       const selectedDate = document.getElementById('attendanceDate').value;
       if (attendanceLogs[selectedDate] && attendanceLogs[selectedDate][empId]) {
         delete attendanceLogs[selectedDate][empId];
-        saveData();
-        renderAttendanceTable();
+        saveAttendanceToCloud();
       }
     }
 
@@ -473,13 +531,13 @@
           </td>
           <td>${record.timeIn}</td>
           <td>${record.timeOut}</td>
-          <td>${isPresent ? '<strong style="color:green;">PRESENT</strong>' : '<strong style="color:red; background:#FFCDD2; padding:2px 4px; border-radius:3px;">ABSENT</strong>'}</td>
+          <td>${isPresent ? '<span style="color:var(--blinkit-green); font-weight:bold;">Present</span>' : '<span style="color:var(--blinkit-red); font-weight:bold;">Absent</span>'}</td>
           <td>
             <button class="btn-green" onclick="executePunch('${emp.id}', 'IN')">IN</button>
             <button class="btn-red" onclick="executePunch('${emp.id}', 'OUT')">OUT</button>
           </td>
           <td>
-            <button class="btn-red" style="padding:4px 8px; font-size:10px;" onclick="resetAttendance('${emp.id}')">Reset</button>
+            <button class="btn-main" style="padding: 3px 6px; font-size:10px;" onclick="resetAttendance('${emp.id}')">Reset</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -498,31 +556,31 @@
       const editIndex = parseInt(document.getElementById('editEmpIndex').value);
 
       if (!id || !name) {
-        alert(" Kripya Employee ID aur Name zaroor bharein!");
+        alert('Kripya Employee ID aur Name darj karein!');
         return;
       }
 
-      const empObj = { dept, id, name, mobile, shiftName, startTime, endTime, role };
+      const empData = { dept, id, name, mobile, shiftName, startTime, endTime, role };
 
-      if (editIndex > -1) {
-        employees[editIndex] = empObj;
-        document.getElementById('editEmpIndex').value = -1;
-      } else {
+      if (editIndex === -1) {
         if (employees.some(e => e.id.toLowerCase() === id.toLowerCase())) {
-          alert(" Yeh Employee ID pahle se maujood hai!");
+          alert('Yeh Employee ID pahle se maujood hai!');
           return;
         }
-        employees.push(empObj);
+        employees.push(empData);
+      } else {
+        employees[editIndex] = empData;
+        document.getElementById('editEmpIndex').value = '-1';
+        document.getElementById('empFormTitle').innerText = 'Add / Update Employee & Custom Shift Time';
       }
 
-      saveData();
-      renderMasterEmployees();
-      
       document.getElementById('newEmpId').value = '';
       document.getElementById('newEmpName').value = '';
       document.getElementById('newEmpMobile').value = '';
       document.getElementById('empShiftName').value = '';
-      alert(" Employee safalpurvak save ho gaya!");
+
+      saveEmployeesToCloud();
+      alert('Employee safaltapoorvak save ho gaya!');
     }
 
     function renderMasterEmployees() {
@@ -530,7 +588,7 @@
       tbody.innerHTML = '';
 
       if (!employees.length) {
-        tbody.innerHTML = `<tr><td colspan="7" style="color:#777;">Koi employee registered nahi hai.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="color:#777;">Koi employee nahi joda gaya hai.</td></tr>`;
         return;
       }
 
@@ -540,12 +598,12 @@
           <td>${emp.dept}</td>
           <td><strong>${emp.id}</strong></td>
           <td>${emp.name}</td>
-          <td>${emp.shiftName || 'Shift'} (${emp.startTime} - ${emp.endTime})</td>
+          <td><span class="shift-tag">${emp.shiftName || 'Shift'}</span> (${emp.startTime} - ${emp.endTime})</td>
           <td><span class="role-badge">${emp.role}</span></td>
           <td>${emp.mobile || 'N/A'}</td>
           <td>
-            <button class="btn-green" style="padding:3px 6px; font-size:10px;" onclick="editEmployee(${index})">Edit</button>
-            <button class="btn-red" style="padding:3px 6px; font-size:10px;" onclick="deleteEmployee(${index})">Delete</button>
+            <button class="btn-main" style="padding:3px 8px; font-size:10px;" onclick="editEmployee(${index})">Edit</button>
+            <button class="btn-red" style="padding:3px 8px; font-size:10px;" onclick="deleteEmployee(${index})">Delete</button>
           </td>
         `;
         tbody.appendChild(tr);
@@ -563,14 +621,15 @@
       document.getElementById('empEndTime').value = emp.endTime || '15:00';
       document.getElementById('empRole').value = emp.role;
       document.getElementById('editEmpIndex').value = index;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('empFormTitle').innerText = 'Edit Employee: ' + emp.id;
+      
+      switchTab('employeesView', document.querySelectorAll('.tab-btn')[1]);
     }
 
     function deleteEmployee(index) {
-      if (confirm("Kya aap is employee ko master list se delete karna chahte hain?")) {
+      if (confirm('Kya aap is employee ko hatana chahte hain?')) {
         employees.splice(index, 1);
-        saveData();
-        renderMasterEmployees();
+        saveEmployeesToCloud();
       }
     }
 
@@ -582,35 +641,46 @@
 
       if (!attendanceLogs[date]) attendanceLogs[date] = {};
 
-      let filteredEmps = employees.filter(emp => {
-        const rec = attendanceLogs[date][emp.id];
-        const isPresent = rec && rec.timeIn && rec.timeIn !== '--:--';
-        if (statusFilter === 'PRESENT') return isPresent;
-        if (statusFilter === 'ABSENT') return !isPresent;
-        return true;
+      let reportData = [];
+      employees.forEach(emp => {
+        const rec = attendanceLogs[date][emp.id] || { timeIn: '--:--', timeOut: '--:--' };
+        const isPresent = rec.timeIn !== '--:--';
+        const status = isPresent ? 'PRESENT' : 'ABSENT';
+
+        if (statusFilter === 'ALL' || statusFilter === status) {
+          reportData.push({
+            date,
+            dept: emp.dept,
+            id: emp.id,
+            name: emp.name,
+            timing: `${emp.shiftName || 'Shift'} (${emp.startTime} - ${emp.endTime})`,
+            role: emp.role,
+            mobile: emp.mobile || 'N/A',
+            timeIn: rec.timeIn,
+            timeOut: rec.timeOut,
+            status
+          });
+        }
       });
 
-      if (!filteredEmps.length) {
-        tbody.innerHTML = `<tr><td colspan="10" style="color:#777;">Is date ya filter ke liye koi data nahi mila.</td></tr>`;
+      if (!reportData.length) {
+        tbody.innerHTML = `<tr><td colspan="10" style="color:#777;">Selected filter ke anusaar koi data nahi mila.</td></tr>`;
         return;
       }
 
-      filteredEmps.forEach(emp => {
-        const rec = attendanceLogs[date][emp.id] || { timeIn: '--:--', timeOut: '--:--' };
-        const isPresent = rec.timeIn !== '--:--';
-
+      reportData.forEach(row => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${date}</td>
-          <td>${emp.dept}</td>
-          <td><strong>${emp.id}</strong></td>
-          <td>${emp.name}</td>
-          <td>${emp.shiftName || 'Shift'} (${emp.startTime} - ${emp.endTime})</td>
-          <td>${emp.role}</td>
-          <td>${emp.mobile || 'N/A'}</td>
-          <td>${rec.timeIn}</td>
-          <td>${rec.timeOut}</td>
-          <td>${isPresent ? '<strong style="color:green;">PRESENT</strong>' : '<strong style="color:red;">ABSENT</strong>'}</td>
+          <td>${row.date}</td>
+          <td>${row.dept}</td>
+          <td><strong>${row.id}</strong></td>
+          <td>${row.name}</td>
+          <td>${row.timing}</td>
+          <td>${row.role}</td>
+          <td>${row.mobile}</td>
+          <td>${row.timeIn}</td>
+          <td>${row.timeOut}</td>
+          <td><strong style="color:${row.status === 'PRESENT' ? 'var(--blinkit-green)' : 'var(--blinkit-red)'};">${row.status}</strong></td>
         `;
         tbody.appendChild(tr);
       });
@@ -622,44 +692,38 @@
       
       if (!attendanceLogs[date]) attendanceLogs[date] = {};
 
-      let filteredEmps = employees.filter(emp => {
-        const rec = attendanceLogs[date][emp.id];
-        const isPresent = rec && rec.timeIn && rec.timeIn !== '--:--';
-        if (statusFilter === 'PRESENT') return isPresent;
-        if (statusFilter === 'ABSENT') return !isPresent;
-        return true;
+      let excelRows = [];
+      employees.forEach(emp => {
+        const rec = attendanceLogs[date][emp.id] || { timeIn: '--:--', timeOut: '--:--' };
+        const isPresent = rec.timeIn !== '--:--';
+        const status = isPresent ? 'PRESENT' : 'ABSENT';
+
+        if (statusFilter === 'ALL' || statusFilter === status) {
+          excelRows.push({
+            'Date': date,
+            'Department': emp.dept,
+            'Employee ID': emp.id,
+            'Employee Name': emp.name,
+            'Shift Timing': `${emp.shiftName || 'Shift'} (${emp.startTime} - ${emp.endTime})`,
+            'Role': emp.role,
+            'Mobile': emp.mobile || 'N/A',
+            'Time In': rec.timeIn,
+            'Time Out': rec.timeOut,
+            'Status': status
+          });
+        }
       });
 
-      if (!filteredEmps.length) {
-        alert("Export karne ke liye koi data available nahi hai!");
+      if (!excelRows.length) {
+        alert('Export karne ke liye koi data available nahi hai!');
         return;
       }
 
-      const excelData = filteredEmps.map(emp => {
-        const rec = attendanceLogs[date][emp.id] || { timeIn: '--:--', timeOut: '--:--' };
-        return {
-          "Date": date,
-          "Department": emp.dept,
-          "Employee ID": emp.id,
-          "Employee Name": emp.name,
-          "Shift Name": emp.shiftName || 'N/A',
-          "Shift Time": `${emp.startTime} - ${emp.endTime}`,
-          "Role": emp.role,
-          "Mobile": emp.mobile || 'N/A',
-          "Time In": rec.timeIn,
-          "Time Out": rec.timeOut,
-          "Status": rec.timeIn !== '--:--' ? 'PRESENT' : 'ABSENT'
-        };
-      });
-
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const worksheet = XLSX.utils.json_to_sheet(excelRows);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance Report");
       XLSX.writeFile(workbook, `Blinkit_Attendance_${date}.xlsx`);
     }
-
-    // Initial Load
-    renderHomeDepartmentCards();
   </script>
 </body>
 </html>
