@@ -26,11 +26,11 @@
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: var(--blinkit-light); margin: 0; padding: 12px; color: var(--blinkit-dark); }
 
-    /* ETERNAL & BLINKIT BRAND HEADER */
+    /* PERFECT RESPONSIVE HEADER DESIGN */
     header {
       background: var(--blinkit-yellow);
       color: var(--blinkit-dark);
-      padding: 14px 18px;
+      padding: 14px 16px;
       border-radius: 12px;
       text-align: center;
       margin-bottom: 12px;
@@ -42,35 +42,72 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
 
-    .eternal-group-logo {
-      height: 38px;
+    .brand-badges-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .brand-badge {
+      background: #121212;
+      color: white;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 4px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+    }
+
+    .badge-zomato { background: #E23744; color: white; }
+    .badge-blinkit { background: #037A38; color: white; }
+
+    .header-logo-item {
+      height: 22px;
       object-fit: contain;
-      background: #FFFFFF;
-      padding: 3px 10px;
-      border-radius: 6px;
-      border: 1px solid #DDD;
+      border-radius: 3px;
     }
 
     .live-clock {
-      font-size: 13px;
+      font-size: 11px;
       font-weight: 800;
       background: var(--blinkit-dark);
       color: var(--blinkit-yellow);
-      padding: 5px 12px;
+      padding: 5px 10px;
       border-radius: 20px;
-      letter-spacing: 0.5px;
     }
 
-    .brand-logo-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .brand-logo-img { height: 40px; object-fit: contain; border-radius: 4px; margin-bottom: 2px; }
+    .brand-logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 6px 0;
+    }
+
+    .main-blinkit-logo-box {
+      font-size: 32px;
+      font-weight: 900;
+      color: #121212;
+      background: #FFFFFF;
+      padding: 2px 14px;
+      border-radius: 6px;
+      letter-spacing: -1px;
+      display: inline-block;
+      border: 2px solid #121212;
+    }
+    .main-blinkit-logo-box span { color: #037A38; }
 
     .header-subtitle {
-      margin-top: 6px;
+      margin-top: 4px;
       font-size: 11px;
       font-weight: 800;
       background: var(--blinkit-dark);
@@ -88,7 +125,7 @@
       padding: 3px 8px;
       border-radius: 10px;
       display: inline-block;
-      margin-top: 5px;
+      margin-top: 4px;
     }
 
     /* NAV TABS */
@@ -129,17 +166,18 @@
 </head>
 <body>
 
-  <!-- HEADER WITH EERNAL GROUP DESIGN & LIVE CLOCK -->
+  <!-- HEADER WITH CLEAN FALLBACK BRANDING -->
   <header>
     <div class="header-top-row">
-      <!-- Eternal Group Logo (from image 1000579238.jpg) -->
-      <img src="1000579238.jpg" alt="Eternal Group" class="eternal-group-logo">
-      <!-- Live Running Clock -->
-      <div class="live-clock" id="liveClockDisplay"> Loading Time...</div>
+      <div class="brand-badges-group">
+        <div class="brand-badge">ETERNAL</div>
+        <div class="brand-badge badge-zomato">ZOMATO</div>
+      </div>
+      <div class="live-clock" id="liveClockDisplay"> Loading...</div>
     </div>
 
     <div class="brand-logo-container">
-      <img src="1000578098_3.jpg" alt="Blinkit Logo" class="brand-logo-img">
+      <div class="main-blinkit-logo-box">blink<span>it</span></div>
     </div>
 
     <div class="header-subtitle">FC I2 INDORE — Multi-Device Live Attendance System</div>
@@ -692,7 +730,7 @@
       });
 
       if (!reportData.length) {
-        tbody.innerHTML = `<tr><td colspan="10" style="color:#777;">Selected filter ke anusa koi data nahi mila.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="color:#777;">Selected filter ke anusaar koi data nahi mila.</td></tr>`;
         return;
       }
 
