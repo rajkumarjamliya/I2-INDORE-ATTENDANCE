@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blinkit FC I2 Indore - Department Wise Attendance</title>
+  
+  <!-- SheetJS Library Excel Export के लिए -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
     :root {
       --blinkit-yellow: #FFC200;
@@ -11,121 +15,413 @@
       --blinkit-light: #F7F9FA;
       --blinkit-green: #037A38;
       --blinkit-red: #D32F2F;
+      --blinkit-blue: #0288D1;
+      --shift-highlight: #FFFDE7;
     }
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: var(--blinkit-light); margin: 0; padding: 15px; color: var(--blinkit-dark); }
-    header { background-color: var(--blinkit-dark); color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 15px; border-bottom: 4px solid var(--blinkit-yellow); }
-    h1 { color: var(--blinkit-yellow); margin: 0; font-size: 18px; }
-    h3 { color: #ccc; margin: 4px 0 0 0; font-size: 11px; font-weight: normal; }
-    
-    .nav-tabs { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; }
-    .tab-btn { background: #ddd; border: none; padding: 7px 12px; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 12px; }
-    .tab-btn.active { background: var(--blinkit-yellow); color: var(--blinkit-dark); }
 
-    .view-section { display: none; }
-    .view-section.active { display: block; }
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-    .dashboard-container { max-width: 700px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    @media(max-width: 600px) { .dashboard-container { grid-template-columns: 1fr; } }
-    .dept-card-home { background: white; border: 2px solid #e0e0e0; border-left: 6px solid var(--blinkit-yellow); padding: 18px; border-radius: 8px; text-align: center; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .dept-card-home:hover { background: var(--blinkit-yellow); }
+    body {
+      background-color: var(--blinkit-light);
+      margin: 0;
+      padding: 12px;
+      color: var(--blinkit-dark);
+    }
 
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; border-left: 5px solid var(--blinkit-yellow); flex-wrap: wrap; gap: 8px; }
-    .btn-action { background: var(--blinkit-dark); color: white; border: none; padding: 6px 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 11px; }
-    
-    .summary-bar { display: flex; gap: 10px; margin-bottom: 12px; }
-    .sum-box { flex: 1; background: white; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 13px; border-top: 4px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .sum-p { border-top-color: var(--blinkit-green); color: var(--blinkit-green); }
-    .sum-u { border-top-color: var(--blinkit-red); color: var(--blinkit-red); }
+    /* GLOBAL HEADER WITH LOGO */
+    header {
+      background-color: var(--blinkit-yellow);
+      color: var(--blinkit-dark);
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      border-bottom: 4px solid var(--blinkit-dark);
+    }
 
-    .card { background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 12px; border: 1px solid #e0e0e0; }
-    .card h4 { margin-top: 0; color: var(--blinkit-dark); border-bottom: 2px solid var(--blinkit-yellow); padding-bottom: 5px; font-size: 13px; }
-    
-    label { font-weight: 600; display: block; margin-top: 6px; font-size: 11px; color: #555; }
-    input, select { width: 100%; padding: 6px; margin-top: 2px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px; }
-    .btn-main { background: var(--blinkit-yellow); color: var(--blinkit-dark); border: none; padding: 9px; font-weight: bold; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; font-size: 12px; }
-    
-    .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 11px; }
-    th, td { border: 1px solid #ddd; padding: 5px; text-align: center; }
-    th { background-color: var(--blinkit-dark); color: white; }
-    
-    .badge-p { background-color: #e8f5e9; color: var(--blinkit-green); font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 12px; }
-    .badge-u { background-color: #ffebee; color: var(--blinkit-red); font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 12px; }
-    .call-btn { background: #0288D1; color: white; text-decoration: none; padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; }
-    .timer-text { color: #d32f2f; font-weight: bold; font-family: monospace; font-size: 12px; }
+    .brand-logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-logo-text {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1;
+      color: #000;
+    }
+
+    .brand-logo-text span {
+      color: var(--blinkit-green);
+    }
+
+    .cart-icon {
+      font-size: 24px;
+      margin-top: 2px;
+    }
+
+    .header-subtitle {
+      margin-top: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      background: var(--blinkit-dark);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    /* NAV TABS */
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      background: #e0e0e0;
+      border: none;
+      padding: 8px 14px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .tab-btn.active {
+      background: var(--blinkit-dark);
+      color: var(--blinkit-yellow);
+    }
+
+    .view-section {
+      display: none;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    /* DASHBOARD GRID */
+    .dashboard-container {
+      max-width: 750px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 600px) {
+      .dashboard-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .dept-card-home {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-left: 6px solid var(--blinkit-yellow);
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+    }
+
+    .dept-card-home:hover {
+      background: var(--blinkit-yellow);
+      transform: translateY(-2px);
+    }
+
+    /* TOP BAR & SUMMARY */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      background: white;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-left: 5px solid var(--blinkit-yellow);
+      flex-wrap: wrap;
+      gap: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .btn-action {
+      background: var(--blinkit-dark);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .sum-card {
+      background: white;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 11px;
+      font-weight: bold;
+      border-top: 3px solid #ccc;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    .sum-present { border-top-color: var(--blinkit-green); color: var(--blinkit-green); }
+    .sum-pending { border-top-color: var(--blinkit-red); color: var(--blinkit-red); }
+    .sum-role { border-top-color: var(--blinkit-blue); color: var(--blinkit-blue); }
+
+    .sum-card span {
+      display: block;
+      font-size: 16px;
+      margin-top: 2px;
+    }
+
+    /* TABLES & CARDS */
+    .card {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 12px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .card h4 {
+      margin-top: 0;
+      color: var(--blinkit-dark);
+      border-bottom: 2px solid var(--blinkit-yellow);
+      padding-bottom: 5px;
+      font-size: 13px;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 6px;
+      font-size: 11px;
+      color: #555;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 6px;
+      margin-top: 2px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    .btn-main {
+      background: var(--blinkit-yellow);
+      color: var(--blinkit-dark);
+      border: none;
+      padding: 9px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      font-size: 12px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 5px;
+      font-size: 11px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: center;
+    }
+
+    th {
+      background-color: var(--blinkit-dark);
+      color: white;
+    }
+
+    /* Active Shift Highlight */
+    tr.active-shift-row {
+      background-color: #FFF9C4 !important; /* पीला हाईलाइट वर्तमान शिफ्ट के कर्मचारियों के लिए */
+      font-weight: 600;
+    }
+
+    .shift-tag {
+      font-size: 9px;
+      padding: 2px 5px;
+      border-radius: 3px;
+      background: #eee;
+      display: inline-block;
+      margin-top: 2px;
+    }
+
+    .active-shift-tag {
+      background: var(--blinkit-yellow);
+      color: #000;
+      font-weight: bold;
+    }
+
+    .role-badge {
+      background: #E1F5FE;
+      color: #0277BD;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .call-btn {
+      background: #0288D1;
+      color: white;
+      text-decoration: none;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 2px;
+    }
+
+    /* SIDE DATA / EXPORT PANEL LAYOUT */
+    .report-layout {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .report-main {
+      flex: 3;
+      min-width: 280px;
+    }
+
+    .report-side {
+      flex: 1;
+      min-width: 240px;
+      background: #fdfdfd;
+    }
   </style>
 </head>
 <body>
 
+  <!-- GLOBAL HEADER WITH LOGO ON EVERY PAGE -->
   <header>
-    <h1>BLINKIT - FULFILLMENT CENTER (I2 INDORE)</h1>
-    <h3>Department Wise Attendance & Live Timer System</h3>
+    <div class="brand-logo-container">
+      <div class="brand-logo-text">blink<span>it</span></div>
+      <div class="cart-icon">🛒</div>
+    </div>
+    <div class="header-subtitle">FC I2 INDORE — Attendance & Shift Management</div>
   </header>
 
-  <!-- Navigation Tabs -->
+  <!-- NAVIGATION TABS -->
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('daily')">📅 Department Wise Attendance</button>
-    <button class="tab-btn" onclick="switchTab('employees')">👥 Add Employees</button>
-    <button class="tab-btn" onclick="switchTab('report')">📊 Report & Excel Download</button>
+    <button class="tab-btn active" onclick="switchTab('dailyView', this)">📅 Department Wise Attendance</button>
+    <button class="tab-btn" onclick="switchTab('employeesView', this)">👥 Add Employees & Shift</button>
+    <button class="tab-btn" onclick="switchTab('reportView', this)">📊 Side Data & Excel Export</button>
   </div>
 
   <!-- TAB 1: DAILY ATTENDANCE -->
   <div id="dailyView" class="view-section active">
+    <!-- HOME: DEPARTMENT SELECT -->
     <div id="homeView">
       <h3 style="text-align: center; margin-bottom: 12px; color: #444; font-size: 13px;">SELECT DEPARTMENT</h3>
       <div class="dashboard-container">
-        <div class="dept-card-home" onclick="openDept('Inbound')">📦 INBOUND</div>
-        <div class="dept-card-home" onclick="openDept('Outbound')">📤 OUTBOUND</div>
-        <div class="dept-card-home" onclick="openDept('Dispatch')">🚚 DISPATCH</div>
-        <div class="dept-card-home" onclick="openDept('Return')">🔄 RETURN</div>
-        <div class="dept-card-home" onclick="openDept('Putaway')">📥 PUTAWAY</div>
-        <div class="dept-card-home" onclick="openDept('Guard Staff')">🛡️ GUARD STAFF</div>
+        <div class="dept-card-home" onclick="openDepartment('Inbound')">📦 INBOUND</div>
+        <div class="dept-card-home" onclick="openDepartment('Outbound')">📤 OUTBOUND</div>
+        <div class="dept-card-home" onclick="openDepartment('Dispatch')">🚚 DISPATCH</div>
+        <div class="dept-card-home" onclick="openDepartment('Return')">🔄 RETURN</div>
+        <div class="dept-card-home" onclick="openDepartment('Putaway')">📥 PUTAWAY</div>
+        <div class="dept-card-home" onclick="openDepartment('Guard Staff')">🛡️ GUARD STAFF</div>
       </div>
     </div>
 
+    <!-- DEPARTMENT INSIDE VIEW -->
     <div id="deptView" style="display: none;">
       <div class="top-bar">
-        <button class="btn-action" onclick="goHome()">⬅ Back to Departments</button>
-        <h2 id="deptTitle" style="margin:0; font-size: 13px;">INBOUND</h2>
+        <button class="btn-action" onclick="showHomeView()">⬅ Back to Departments</button>
+        <h2 id="deptTitle" style="margin:0; font-size: 14px;">INBOUND</h2>
         <div>
-          <label style="display:inline; font-size:11px;">Date: </label>
-          <input type="date" id="attendanceDate" style="width: auto; padding: 3px; display:inline;" onchange="loadAttendanceList()">
+          <label style="display:inline; font-size:11px;">Shift Filter: </label>
+          <select id="shiftFilter" style="width: auto; padding: 3px; display:inline;" onchange="renderAttendanceTable()">
+            <option value="ALL">All Shifts</option>
+            <option value="Shift A (06:00 AM - 02:00 PM)">Shift A (Morning)</option>
+            <option value="Shift B (02:00 PM - 10:00 PM)">Shift B (Evening)</option>
+            <option value="Shift C (10:00 PM - 06:00 AM)">Shift C (Night)</option>
+            <option value="General Shift (09:00 AM - 06:00 PM)">General Shift</option>
+          </select>
+          <input type="date" id="attendanceDate" style="width: auto; padding: 3px; display:inline;" onchange="renderAttendanceTable()">
         </div>
       </div>
 
-      <!-- Counting Summary Bar -->
-      <div class="summary-bar">
-        <div class="sum-box sum-p">🟢 Present (P): <span id="totalPCount">0</span></div>
-        <div class="sum-box sum-u">🔴 Absent (U): <span id="totalUCount">0</span></div>
+      <!-- COUNTING & ROLE SUMMARY BAR -->
+      <div class="summary-grid">
+        <div class="sum-card sum-present">🟢 Present<span id="totalPCount">0</span></div>
+        <div class="sum-card sum-pending">🔴 Pending / Absent<span id="totalUCount">0</span></div>
+        <div class="sum-card sum-role">📦 Aggregation<span id="countAggregation">0</span></div>
+        <div class="sum-card sum-role">📥 Putaway<span id="countPutaway">0</span></div>
+        <div class="sum-card sum-role">⭐ Team Lead (TL)<span id="countTL">0</span></div>
       </div>
 
       <div class="card">
-        <h4 style="color: var(--blinkit-green);" id="deptTableHeading">📋 Attendance List</h4>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <h4 style="margin:0; color: var(--blinkit-green);" id="deptTableHeading">📋 Attendance & Punch List</h4>
+          <span style="font-size: 10px; background: #FFF9C4; padding: 2px 6px; border-radius: 4px; border: 1px solid #FBC02D;">🟡 Active Shift Employees Highlighted</span>
+        </div>
+        
         <div class="table-container">
           <table>
             <thead>
               <tr>
                 <th>ID</th>
                 <th>Name & Contact</th>
-                <th>Status (P / U)</th>
+                <th>Shift & Role</th>
+                <th>Punch In/Out</th>
                 <th>Time In</th>
                 <th>Time Out</th>
-                <th>Live Working Timer</th>
-                <th>Save</th>
+                <th>Action</th>
               </tr>
             </thead>
-            <tbody id="attendanceTableBody"></tbody>
+            <tbody id="attendanceTableBody">
+              <!-- Dynamic Rows -->
+            </tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- TAB 2: ADD EMPLOYEES -->
+  <!-- TAB 2: ADD EMPLOYEES & SHIFT -->
   <div id="employeesView" class="view-section">
-    <div class="card" style="max-width: 500px; margin: 0 auto; background: #fffcf0;">
-      <h4>➕ Add Employee to Department</h4>
+    <div class="card" style="max-width: 550px; margin: 0 auto; background: #fffcf0;">
+      <h4>➕ Add Employee with Shift & Role</h4>
+      
       <label>Select Department:</label>
       <select id="empDept">
         <option value="Inbound">Inbound</option>
@@ -145,11 +441,29 @@
       <label>Mobile Number (For Call):</label>
       <input type="tel" id="newEmpMobile" placeholder="9898XXXXXX">
 
-      <button class="btn-main" onclick="saveNewEmployee()">Save Employee</button>
+      <label>Assign Shift:</label>
+      <select id="empShift">
+        <option value="Shift A (06:00 AM - 02:00 PM)">Shift A (06:00 AM - 02:00 PM)</option>
+        <option value="Shift B (02:00 PM - 10:00 PM)">Shift B (02:00 PM - 10:00 PM)</option>
+        <option value="Shift C (10:00 PM - 06:00 AM)">Shift C (10:00 PM - 06:00 AM)</option>
+        <option value="General Shift (09:00 AM - 06:00 PM)">General Shift (09:00 AM - 06:00 PM)</option>
+      </select>
+
+      <label>Assign Role / Work Type:</label>
+      <select id="empRole">
+        <option value="Aggregation">Aggregation</option>
+        <option value="Putaway">Putaway</option>
+        <option value="Team Lead (TL)">Team Lead (TL)</option>
+        <option value="Picker">Picker</option>
+        <option value="Sorter">Sorter</option>
+        <option value="Guard">Guard</option>
+      </select>
+
+      <button class="btn-main" onclick="addEmployee()">Save Employee</button>
     </div>
 
     <div class="card" style="margin-top: 15px;">
-      <h4>📁 Saved Employees Directory (All Departments)</h4>
+      <h4>📁 Saved Employees Directory (Shift & Role Wise)</h4>
       <div class="table-container">
         <table>
           <thead>
@@ -157,377 +471,418 @@
               <th>Dept</th>
               <th>ID</th>
               <th>Name</th>
+              <th>Shift</th>
+              <th>Role</th>
               <th>Mobile</th>
               <th>Action</th>
             </tr>
           </thead>
-          <tbody id="masterEmpTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB 3: REPORT & EXCEL -->
-  <div id="reportView" class="view-section">
-    <div class="card">
-      <h4>📊 Date-to-Date Report & Excel Download</h4>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center;">
-        <div>
-          <label>From Date:</label>
-          <input type="date" id="startDate">
-        </div>
-        <div>
-          <label>To Date:</label>
-          <input type="date" id="endDate">
-        </div>
-        <div>
-          <label>Department:</label>
-          <select id="reportDept">
-            <option value="ALL">All Departments</option>
-            <option value="Inbound">Inbound</option>
-            <option value="Outbound">Outbound</option>
-            <option value="Dispatch">Dispatch</option>
-            <option value="Return">Return</option>
-            <option value="Putaway">Putaway</option>
-            <option value="Guard Staff">Guard Staff</option>
-          </select>
-        </div>
-        <div style="align-self: flex-end;">
-          <button class="btn-action" style="background: var(--blinkit-green); padding: 8px 12px;" onclick="generateReport()">🔍 Generate</button>
-          <button class="btn-action" style="background: #0288D1; padding: 8px 12px;" onclick="downloadExcel()">📥 Download Excel</button>
-        </div>
-      </div>
-
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Dept</th>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Contact</th>
-              <th>Status</th>
-              <th>Time In</th>
-              <th>Time Out</th>
-              <th>Working Status</th>
-            </tr>
-          </thead>
-          <tbody id="reportTableBody">
-            <tr><td colspan="9" style="color:#777;">Select dates and click Generate.</td></tr>
+          <tbody id="masterEmpTableBody">
+            <!-- Dynamic Rows -->
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
+  <!-- TAB 3: SIDE DATA & EXCEL EXPORT -->
+  <div id="reportView" class="view-section">
+    <div class="report-layout">
+      <!-- MAIN REPORT TABLE -->
+      <div class="report-main card">
+        <h4>📊 Attendance & Shift Report Table</h4>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center;">
+          <div>
+            <label>From Date:</label>
+            <input type="date" id="startDate">
+          </div>
+          <div>
+            <label>To Date:</label>
+            <input type="date" id="endDate">
+          </div>
+          <div>
+            <label>Department:</label>
+            <select id="reportDept">
+              <option value="ALL">All Departments</option>
+              <option value="Inbound">Inbound</option>
+              <option value="Outbound">Outbound</option>
+              <option value="Dispatch">Dispatch</option>
+              <option value="Return">Return</option>
+              <option value="Putaway">Putaway</option>
+              <option value="Guard Staff">Guard Staff</option>
+            </select>
+          </div>
+          <div style="align-self: flex-end;">
+            <button class="btn-action" style="background: var(--blinkit-green); padding: 7px 12px;" onclick="generateReport()">🔍 Generate</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Dept</th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Shift</th>
+                <th>Role</th>
+                <th>In Time</th>
+                <th>Out Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="reportTableBody">
+              <tr><td colspan="9" style="color:#777;">Select dates and click Generate.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SIDE DATA & EXPORT PANEL -->
+      <div class="report-side card">
+        <h4 style="color: var(--blinkit-blue);">📥 Side Export Options</h4>
+        <p style="font-size: 11px; color: #555;">डेटा डाउनलोड करने और रिपोर्ट समरी के लिए साइड विकल्प:</p>
+
+        <button class="btn-main" style="background: #0288D1; color: white;" onclick="downloadExcel()">📥 Excel Sheet Download</button>
+
+        <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+
+        <h4>📋 Current Shift Overview</h4>
+        <div style="font-size: 11px; line-height: 1.6;">
+          <div>• <strong>Shift A (06 AM - 02 PM)</strong></div>
+          <div>• <strong>Shift B (02 PM - 10 PM)</strong></div>
+          <div>• <strong>Shift C (10 PM - 06 AM)</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    let currentDept = "";
-    let todayStr = new Date().toISOString().slice(0,10);
-    document.getElementById("attendanceDate").value = todayStr;
-    document.getElementById("startDate").value = todayStr;
-    document.getElementById("endDate").value = todayStr;
+    // Initial Employee Master Data
+    let employees = JSON.parse(localStorage.getItem('blinkit_employees_v2')) || [
+      { dept: 'Inbound', id: 'BLK-101', name: 'Rahul Sharma', mobile: '9898000001', shift: 'Shift A (06:00 AM - 02:00 PM)', role: 'Aggregation' },
+      { dept: 'Inbound', id: 'BLK-102', name: 'Amit Verma', mobile: '9898000002', shift: 'Shift A (06:00 AM - 02:00 PM)', role: 'Putaway' },
+      { dept: 'Inbound', id: 'BLK-103', name: 'Suresh Kumar', mobile: '9898000003', shift: 'Shift B (02:00 PM - 10:00 PM)', role: 'Team Lead (TL)' }
+    ];
 
-    let employees = JSON.parse(localStorage.getItem('blinkit_master_employees')) || [];
-    let attendanceRecords = JSON.parse(localStorage.getItem('blinkit_daily_attendance')) || [];
-    let timerInterval = null;
+    // Attendance Storage Structure: { "YYYY-MM-DD": { "EMP_ID": { timeIn: "...", timeOut: "..." } } }
+    let attendanceLogs = JSON.parse(localStorage.getItem('blinkit_attendance_v2')) || {};
 
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-      if(tab === 'daily') {
-        document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        document.getElementById('dailyView').classList.add('active');
-      } else if(tab === 'employees') {
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
-        document.getElementById('employeesView').classList.add('active');
-        renderMasterEmployees();
-      } else {
-        document.querySelectorAll('.tab-btn')[2].classList.add('active');
-        document.getElementById('reportView').classList.add('active');
+    let currentSelectedDept = '';
+
+    // Date Setup
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('attendanceDate').value = today;
+    document.getElementById('startDate').value = today;
+    document.getElementById('endDate').value = today;
+
+    function saveData() {
+      localStorage.setItem('blinkit_employees_v2', JSON.stringify(employees));
+      localStorage.setItem('blinkit_attendance_v2', JSON.stringify(attendanceLogs));
+    }
+
+    // Navigation Tabs
+    function switchTab(viewId, btn) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(viewId).classList.add('active');
+      btn.classList.add('active');
+
+      if (viewId === 'employeesView') renderMasterEmployees();
+    }
+
+    // Department Navigation
+    function openDepartment(deptName) {
+      currentSelectedDept = deptName;
+      document.getElementById('homeView').style.display = 'none';
+      document.getElementById('deptView').style.display = 'block';
+      document.getElementById('deptTitle').innerText = deptName.toUpperCase();
+      renderAttendanceTable();
+    }
+
+    function showHomeView() {
+      document.getElementById('deptView').style.display = 'none';
+      document.getElementById('homeView').style.display = 'block';
+    }
+
+    // Determine current active shift based on current time
+    function isCurrentShift(shiftName) {
+      const currentHour = new Date().getHours();
+      if (shiftName.includes('Shift A') && currentHour >= 6 && currentHour < 14) return true;
+      if (shiftName.includes('Shift B') && currentHour >= 14 && currentHour < 22) return true;
+      if (shiftName.includes('Shift C') && (currentHour >= 22 || currentHour < 6)) return true;
+      if (shiftName.includes('General') && currentHour >= 9 && currentHour < 18) return true;
+      return false;
+    }
+
+    // Render Department Attendance Table
+    function renderAttendanceTable() {
+      const selectedDate = document.getElementById('attendanceDate').value;
+      const shiftFilterVal = document.getElementById('shiftFilter').value;
+      const tbody = document.getElementById('attendanceTableBody');
+      tbody.innerHTML = '';
+
+      let deptEmployees = employees.filter(e => e.dept === currentSelectedDept);
+
+      if (shiftFilterVal !== 'ALL') {
+        deptEmployees = deptEmployees.filter(e => e.shift === shiftFilterVal);
       }
-    }
 
-    function openDept(dept) {
-      currentDept = dept;
-      document.getElementById("deptTitle").innerText = dept.toUpperCase() + " DEPARTMENT";
-      document.getElementById("deptTableHeading").innerText = "📋 " + dept + " Department Attendance List";
-      document.getElementById("homeView").style.display = "none";
-      document.getElementById("deptView").style.display = "block";
-      loadAttendanceList();
-    }
-
-    function goHome() {
-      if(timerInterval) clearInterval(timerInterval);
-      document.getElementById("homeView").style.display = "block";
-      document.getElementById("deptView").style.display = "none";
-    }
-
-    function saveNewEmployee() {
-      let dept = document.getElementById("empDept").value;
-      let empId = document.getElementById("newEmpId").value.trim();
-      let name = document.getElementById("newEmpName").value.trim();
-      let mobile = document.getElementById("newEmpMobile").value.trim();
-
-      if(!empId || !name) {
-        alert("Please enter Employee ID and Name");
+      if (!deptEmployees.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="color:#777;">इस फिल्टर के लिए कोई कर्मचारी नहीं मिला।</td></tr>`;
+        updateCounts(0, 0, 0, 0, 0);
         return;
       }
 
-      if(employees.some(e => e.empId === empId)) {
-        alert("Employee ID already exists!");
+      let pCount = 0;
+      let uCount = 0;
+      let aggCount = 0;
+      let putCount = 0;
+      let tlCount = 0;
+
+      if (!attendanceLogs[selectedDate]) attendanceLogs[selectedDate] = {};
+
+      deptEmployees.forEach(emp => {
+        const record = attendanceLogs[selectedDate][emp.id] || { timeIn: '--:--', timeOut: '--:--' };
+        const isActiveShift = isCurrentShift(emp.shift);
+
+        if (record.timeIn !== '--:--') {
+          pCount++;
+          if (emp.role === 'Aggregation') aggCount++;
+          if (emp.role === 'Putaway') putCount++;
+          if (emp.role === 'Team Lead (TL)') tlCount++;
+        } else {
+          uCount++;
+        }
+
+        const tr = document.createElement('tr');
+        if (isActiveShift) {
+          tr.classList.add('active-shift-row');
+        }
+
+        tr.innerHTML = `
+          <td>${emp.id}</td>
+          <td>
+            ${emp.name} <br>
+            <a href="tel:${emp.mobile}" class="call-btn">📞 ${emp.mobile}</a>
+          </td>
+          <td>
+            <span class="shift-tag ${isActiveShift ? 'active-shift-tag' : ''}">${emp.shift.split(' ')[0]}</span><br>
+            <span class="role-badge">${emp.role}</span>
+          </td>
+          <td>
+            <select id="punchType-${emp.id}" style="width: auto;">
+              <option value="IN">IN (Punch In)</option>
+              <option value="OUT">OUT (Punch Out)</option>
+            </select>
+          </td>
+          <td id="timeIn-${emp.id}">${record.timeIn}</td>
+          <td id="timeOut-${emp.id}">${record.timeOut}</td>
+          <td>
+            <button class="btn-action" style="background: var(--blinkit-green);" onclick="handlePunch('${emp.id}')">Punch</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateCounts(pCount, uCount, aggCount, putCount, tlCount);
+    }
+
+    function updateCounts(p, u, agg, put, tl) {
+      document.getElementById('totalPCount').innerText = p;
+      document.getElementById('totalUCount').innerText = u;
+      document.getElementById('countAggregation').innerText = agg;
+      document.getElementById('countPutaway').innerText = put;
+      document.getElementById('countTL').innerText = tl;
+    }
+
+    // Handle Punch In & Out Logic (Double Punch Lock)
+    function handlePunch(empId) {
+      const selectedDate = document.getElementById('attendanceDate').value;
+      const punchType = document.getElementById(`punchType-${empId}`).value;
+      const now = new Date();
+      const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      if (!attendanceLogs[selectedDate]) attendanceLogs[selectedDate] = {};
+      if (!attendanceLogs[selectedDate][empId]) {
+        attendanceLogs[selectedDate][empId] = { timeIn: '--:--', timeOut: '--:--' };
+      }
+
+      const record = attendanceLogs[selectedDate][empId];
+
+      if (punchType === 'IN') {
+        if (record.timeIn !== '--:--') {
+          alert(`❌ डबल पंच अलर्ट: आपका 'IN' पंच पहले ही दर्ज हो चुका है (${record.timeIn})!`);
+          return;
+        }
+        record.timeIn = timeString;
+        alert(`✅ IN Punch दर्ज हुआ: ${timeString}`);
+      } else if (punchType === 'OUT') {
+        if (record.timeIn === '--:--') {
+          alert("⚠️ कृपया पहले 'IN' पंच करें!");
+          return;
+        }
+        if (record.timeOut !== '--:--') {
+          alert(`❌ डबल पंच अलर्ट: आपका 'OUT' पंच पहले ही दर्ज हो चुका है (${record.timeOut})!`);
+          return;
+        }
+        record.timeOut = timeString;
+        alert(`✅ OUT Punch दर्ज हुआ: ${timeString}`);
+      }
+
+      saveData();
+      renderAttendanceTable();
+    }
+
+    // Add Employee with Shift & Role
+    function addEmployee() {
+      const dept = document.getElementById('empDept').value;
+      const id = document.getElementById('newEmpId').value.trim();
+      const name = document.getElementById('newEmpName').value.trim();
+      const mobile = document.getElementById('newEmpMobile').value.trim();
+      const shift = document.getElementById('empShift').value;
+      const role = document.getElementById('empRole').value;
+
+      if (!id || !name) {
+        alert('कृपया ID और Name दोनों दर्ज करें!');
         return;
       }
 
-      employees.push({ dept, empId, name, mobile });
-      localStorage.setItem('blinkit_master_employees', JSON.stringify(employees));
-      
-      alert("Employee added successfully to " + dept + "!");
-      document.getElementById("newEmpId").value = "";
-      document.getElementById("newEmpName").value = "";
-      document.getElementById("newEmpMobile").value = "";
+      if (employees.some(e => e.id === id)) {
+        alert('यह Employee ID पहले से मौजूद है!');
+        return;
+      }
+
+      employees.push({ dept, id, name, mobile, shift, role });
+      saveData();
+      alert('✅ कर्मचारी सफलतापूर्वक Shift और Role के साथ जोड़ दिया गया है!');
+
+      document.getElementById('newEmpId').value = '';
+      document.getElementById('newEmpName').value = '';
+      document.getElementById('newEmpMobile').value = '';
+
       renderMasterEmployees();
     }
 
     function renderMasterEmployees() {
-      let tbody = document.getElementById("masterEmpTableBody");
-      tbody.innerHTML = "";
+      const tbody = document.getElementById('masterEmpTableBody');
+      tbody.innerHTML = '';
 
       employees.forEach((emp, index) => {
-        let tr = document.createElement("tr");
+        const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><b>${emp.dept}</b></td>
-          <td>${emp.empId}</td>
+          <td>${emp.dept}</td>
+          <td>${emp.id}</td>
           <td>${emp.name}</td>
-          <td>${emp.mobile || '-'}</td>
-          <td><button style="background:var(--blinkit-red); color:white; border:none; padding:3px 6px; border-radius:3px; cursor:pointer;" onclick="deleteEmployee(${index})">Delete</button></td>
+          <td>${emp.shift}</td>
+          <td><span class="role-badge">${emp.role}</span></td>
+          <td>${emp.mobile}</td>
+          <td>
+            <button class="btn-action" style="background: var(--blinkit-red);" onclick="deleteEmployee(${index})">🗑️ Delete</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
-
-      if(employees.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="color:#777;">No employees added yet.</td></tr>`;
-      }
     }
 
     function deleteEmployee(index) {
-      if(confirm("Are you sure to delete this employee?")) {
+      if (confirm('क्या आप इस कर्मचारी को हटाना चाहते हैं?')) {
         employees.splice(index, 1);
-        localStorage.setItem('blinkit_master_employees', JSON.stringify(employees));
+        saveData();
         renderMasterEmployees();
       }
     }
 
-    function loadAttendanceList() {
-      if(timerInterval) clearInterval(timerInterval);
-      let date = document.getElementById("attendanceDate").value;
-      let tbody = document.getElementById("attendanceTableBody");
-      tbody.innerHTML = "";
-
-      // Sirf usi department ke employees filter honge
-      let deptEmployees = employees.filter(e => e.dept === currentDept);
-      let pCount = 0, uCount = 0;
-
-      deptEmployees.forEach(emp => {
-        let recordKey = `${date}_${currentDept}_${emp.empId}`;
-        let existing = attendanceRecords.find(r => r.key === recordKey) || {
-          status: "P",
-          timeIn: "09:00",
-          timeOut: "18:00",
-          timestampIn: new Date().setHours(9,0,0,0)
-        };
-
-        if(existing.status === "P") pCount++;
-        else uCount++;
-
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td><b>${emp.empId}</b></td>
-          <td>
-            <b>${emp.name}</b><br>
-            ${emp.mobile ? `<a class="call-btn" href="tel:${emp.mobile}">📞 ${emp.mobile}</a>` : ''}
-          </td>
-          <td>
-            <select id="status_${emp.empId}" onchange="updateCounts()">
-              <option value="P" ${existing.status === 'P' ? 'selected' : ''}>P (Present)</option>
-              <option value="U" ${existing.status === 'U' ? 'selected' : ''}>U (Absent)</option>
-            </select>
-          </td>
-          <td><input type="time" id="in_${emp.empId}" value="${existing.timeIn}" style="width:80px;"></td>
-          <td><input type="time" id="out_${emp.empId}" value="${existing.timeOut}" style="width:80px;"></td>
-          <td><span class="timer-text" id="timer_${emp.empId}">00h 00m 00s</span></td>
-          <td><button class="btn-action" style="background:var(--blinkit-green);" onclick="saveRowAttendance('${emp.empId}', '${emp.name}', '${emp.mobile}')">Save</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      document.getElementById("totalPCount").innerText = pCount;
-      document.getElementById("totalUCount").innerText = uCount;
-
-      if(deptEmployees.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="color:#777;">No employees found in ${currentDept}. Please add employees in 'Add Employees' tab selecting ${currentDept}.</td></tr>`;
-      } else {
-        startLiveTimers();
-      }
-    }
-
-    function updateCounts() {
-      let deptEmployees = employees.filter(e => e.dept === currentDept);
-      let pCount = 0, uCount = 0;
-      deptEmployees.forEach(emp => {
-        let st = document.getElementById(`status_${emp.empId}`).value;
-        if(st === 'P') pCount++;
-        else uCount++;
-      });
-      document.getElementById("totalPCount").innerText = pCount;
-      document.getElementById("totalUCount").innerText = uCount;
-    }
-
-    function startLiveTimers() {
-      timerInterval = setInterval(() => {
-        let deptEmployees = employees.filter(e => e.dept === currentDept);
-        let date = document.getElementById("attendanceDate").value;
-
-        deptEmployees.forEach(emp => {
-          let recordKey = `${date}_${currentDept}_${emp.empId}`;
-          let existing = attendanceRecords.find(r => r.key === recordKey);
-          let timerSpan = document.getElementById(`timer_${emp.empId}`);
-          let statusSelect = document.getElementById(`status_${emp.empId}`);
-
-          if(timerSpan) {
-            if(statusSelect && statusSelect.value === 'P') {
-              let startTime;
-              if(existing && existing.timestampIn) {
-                startTime = existing.timestampIn;
-              } else {
-                let timeInVal = document.getElementById(`in_${emp.empId}`).value || "09:00";
-                let [h, m] = timeInVal.split(':').map(Number);
-                let d = new Date();
-                d.setHours(h, m, 0, 0);
-                startTime = d.getTime();
-              }
-              let now = new Date().getTime();
-              let diff = now - startTime;
-              if(diff > 0) {
-                let hrs = Math.floor(diff / (1000 * 60 * 60));
-                let mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                let secs = Math.floor((diff % (1000 * 60)) / 1000);
-                timerSpan.innerText = `${hrs}h ${mins}m ${secs}s`;
-              } else {
-                timerSpan.innerText = "00h 00m 00s";
-              }
-            } else {
-              timerSpan.innerText = "Absent (U)";
-            }
-          }
-        });
-      }, 1000);
-    }
-
-    function saveRowAttendance(empId, name, mobile) {
-      let date = document.getElementById("attendanceDate").value;
-      let status = document.getElementById(`status_${empId}`).value;
-      let timeIn = document.getElementById(`in_${empId}`).value;
-      let timeOut = document.getElementById(`out_${empId}`).value;
-
-      let [inH, inM] = timeIn.split(':').map(Number);
-      let todayObj = new Date();
-      todayObj.setHours(inH, inM, 0, 0);
-      let timestampIn = todayObj.getTime();
-
-      let recordKey = `${date}_${currentDept}_${empId}`;
-      let record = {
-        key: recordKey,
-        date,
-        dept: currentDept,
-        empId,
-        name,
-        mobile,
-        status,
-        timeIn,
-        timeOut,
-        timestampIn
-      };
-
-      let idx = attendanceRecords.findIndex(r => r.key === recordKey);
-      if(idx >= 0) {
-        attendanceRecords[idx] = record;
-      } else {
-        attendanceRecords.push(record);
-      }
-
-      localStorage.setItem('blinkit_daily_attendance', JSON.stringify(attendanceRecords));
-      alert(`Saved: ${name} in ${currentDept} marked as ${status === 'P' ? 'Present (P)' : 'Absent (U)'}`);
-      loadAttendanceList();
-    }
-
+    // Generate Date-to-Date Report
     function generateReport() {
-      let sDate = document.getElementById("startDate").value;
-      let eDate = document.getElementById("endDate").value;
-      let dept = document.getElementById("reportDept").value;
-      let tbody = document.getElementById("reportTableBody");
-      tbody.innerHTML = "";
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+      const deptFilter = document.getElementById('reportDept').value;
+      const tbody = document.getElementById('reportTableBody');
 
-      let filtered = attendanceRecords.filter(r => {
-        let matchDept = (dept === "ALL" || r.dept === dept);
-        let matchDate = (r.date >= sDate && r.date <= eDate);
-        return matchDept && matchDate;
+      tbody.innerHTML = '';
+      let found = false;
+
+      Object.keys(attendanceLogs).sort().forEach(date => {
+        if (date >= start && date <= end) {
+          const dayLog = attendanceLogs[date];
+
+          employees.forEach(emp => {
+            if (deptFilter === 'ALL' || emp.dept === deptFilter) {
+              const record = dayLog[emp.id] || { timeIn: '--:--', timeOut: '--:--' };
+              const status = record.timeIn !== '--:--' ? '<span style="color:green;font-weight:bold;">PRESENT</span>' : '<span style="color:red;font-weight:bold;">ABSENT</span>';
+
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${date}</td>
+                <td>${emp.dept}</td>
+                <td>${emp.id}</td>
+                <td>${emp.name}</td>
+                <td>${emp.shift}</td>
+                <td>${emp.role}</td>
+                <td>${record.timeIn}</td>
+                <td>${record.timeOut}</td>
+                <td>${status}</td>
+              `;
+              tbody.appendChild(tr);
+              found = true;
+            }
+          });
+        }
       });
 
-      filtered.forEach(r => {
-        let badge = r.status === 'P' ? `<span class="badge-p">P</span>` : `<span class="badge-u">U</span>`;
-        let callLink = r.mobile ? `<a class="call-btn" href="tel:${r.mobile}">📞 ${r.mobile}</a>` : '-';
-
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${r.date}</td>
-          <td><b>${r.dept}</b></td>
-          <td>${r.empId}</td>
-          <td>${r.name}</td>
-          <td>${callLink}</td>
-          <td>${badge}</td>
-          <td>${r.timeIn}</td>
-          <td>${r.timeOut}</td>
-          <td>${r.status === 'P' ? 'Working Active' : 'Absent'}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      if(filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="color:#777;">No records found.</td></tr>`;
+      if (!found) {
+        tbody.innerHTML = '<tr><td colspan="9" style="color:#777;">इस तारीख सीमा में कोई रिकॉर्ड नहीं मिला।</td></tr>';
       }
     }
 
+    // Export to Excel
     function downloadExcel() {
-      let sDate = document.getElementById("startDate").value;
-      let eDate = document.getElementById("endDate").value;
-      let dept = document.getElementById("reportDept").value;
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+      const deptFilter = document.getElementById('reportDept').value;
 
-      let filtered = attendanceRecords.filter(r => {
-        let matchDept = (dept === "ALL" || r.dept === dept);
-        let matchDate = (r.date >= sDate && r.date <= eDate);
-        return matchDept && matchDate;
+      let reportData = [];
+
+      Object.keys(attendanceLogs).sort().forEach(date => {
+        if (date >= start && date <= end) {
+          const dayLog = attendanceLogs[date];
+
+          employees.forEach(emp => {
+            if (deptFilter === 'ALL' || emp.dept === deptFilter) {
+              const record = dayLog[emp.id] || { timeIn: '--:--', timeOut: '--:--' };
+              reportData.push({
+                "Date": date,
+                "Department": emp.dept,
+                "Employee ID": emp.id,
+                "Name": emp.name,
+                "Shift": emp.shift,
+                "Role": emp.role,
+                "Contact": emp.mobile,
+                "Time In": record.timeIn,
+                "Time Out": record.timeOut,
+                "Status": record.timeIn !== '--:--' ? 'PRESENT' : 'ABSENT'
+              });
+            }
+          });
+        }
       });
 
-      if(filtered.length === 0) {
-        alert("No data available to download.");
+      if (reportData.length === 0) {
+        alert("डाउनलोड करने के लिए कोई डेटा मौजूद नहीं है!");
         return;
       }
 
-      let csv = "Date,Department,Emp ID,Name,Mobile,Status,Time In,Time Out\n";
-      filtered.forEach(r => {
-        csv += `"${r.date}","${r.dept}","${r.empId}","${r.name}","${r.mobile}","${r.status}","${r.timeIn}","${r.timeOut}"\n`;
-      });
+      const worksheet = XLSX.utils.json_to_sheet(reportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance_Report");
 
-      let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      let link = document.createElement("a");
-      let url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", `Blinkit_Attendance_${sDate}_to_${eDate}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      XLSX.writeFile(workbook, `Blinkit_I2_Indore_Attendance_${start}_to_${end}.xlsx`);
     }
+
+    // Initial Execution
+    renderMasterEmployees();
   </script>
 </body>
 </html>
