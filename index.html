@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blinkit FC I2 Indore - Live Multi-Device Attendance System</title>
+  <title>Blinkit FC I2 Indore - Multi-Device Live Attendance System</title>
   
   <!-- SheetJS Library Excel Export -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -26,11 +26,11 @@
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: var(--blinkit-light); margin: 0; padding: 12px; color: var(--blinkit-dark); }
 
-    /* BRAND HEADER WITH LOGOS */
+    /* ETERNAL & BLINKIT BRAND HEADER */
     header {
       background: var(--blinkit-yellow);
       color: var(--blinkit-dark);
-      padding: 16px 18px 12px 18px;
+      padding: 14px 18px;
       border-radius: 12px;
       text-align: center;
       margin-bottom: 12px;
@@ -38,22 +38,40 @@
       border-bottom: 4px solid var(--blinkit-dark);
     }
 
-    .brand-logos-top {
+    .header-top-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
-    .brand-logo-img { height: 32px; object-fit: contain; border-radius: 4px; }
-    .eternal-logo-img { height: 26px; object-fit: contain; background: #121212; padding: 2px 8px; border-radius: 4px; }
+    .eternal-group-logo {
+      height: 38px;
+      object-fit: contain;
+      background: #FFFFFF;
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid #DDD;
+    }
+
+    .live-clock {
+      font-size: 13px;
+      font-weight: 800;
+      background: var(--blinkit-dark);
+      color: var(--blinkit-yellow);
+      padding: 5px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
     .brand-logo-container { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .brand-logo-text { font-size: 48px; font-weight: 900; letter-spacing: -2px; line-height: 1; color: #121212; user-select: none; }
-    .brand-logo-text span { color: #037A38; }
+    .brand-logo-img { height: 40px; object-fit: contain; border-radius: 4px; margin-bottom: 2px; }
 
     .header-subtitle {
-      margin-top: 8px;
-      font-size: 12px;
+      margin-top: 6px;
+      font-size: 11px;
       font-weight: 800;
       background: var(--blinkit-dark);
       color: white;
@@ -63,14 +81,14 @@
     }
 
     .server-status {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: bold;
       color: #037A38;
       background: #E8F5E9;
-      padding: 4px 10px;
-      border-radius: 12px;
+      padding: 3px 8px;
+      border-radius: 10px;
       display: inline-block;
-      margin-top: 6px;
+      margin-top: 5px;
     }
 
     /* NAV TABS */
@@ -111,15 +129,19 @@
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- HEADER WITH EERNAL GROUP DESIGN & LIVE CLOCK -->
   <header>
-    <div class="brand-logos-top">
-      <img src="1000579236.jpg" alt="Eternal Logo" class="eternal-logo-img">
-      <img src="1000578098.jpg" alt="Blinkit Logo" class="brand-logo-img">
+    <div class="header-top-row">
+      <!-- Eternal Group Logo (from image 1000579238.jpg) -->
+      <img src="1000579238.jpg" alt="Eternal Group" class="eternal-group-logo">
+      <!-- Live Running Clock -->
+      <div class="live-clock" id="liveClockDisplay"> Loading Time...</div>
     </div>
+
     <div class="brand-logo-container">
-      <div class="brand-logo-text">blink<span>it</span></div>
+      <img src="1000578098_3.jpg" alt="Blinkit Logo" class="brand-logo-img">
     </div>
+
     <div class="header-subtitle">FC I2 INDORE — Multi-Device Live Attendance System</div>
     <div><span class="server-status" id="serverStatusText"> Live Server Connected (Auto Sync Active)</span></div>
   </header>
@@ -310,8 +332,16 @@
   </div>
 
   <script>
+    // --- LIVE RUNNING CLOCK SCRIPT ---
+    function updateLiveClock() {
+      const now = new Date();
+      const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+      document.getElementById('liveClockDisplay').innerText = " " + now.toLocaleDateString('en-IN', options);
+    }
+    setInterval(updateLiveClock, 1000);
+    updateLiveClock();
+
     // --- FIREBASE CONFIGURATION ---
-    // Niche apni Firebase Project Details Dalein (Instructions niche diye hain)
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -322,7 +352,6 @@
       appId: "1:123456789:web:abcdef"
     };
 
-    // Firebase Init
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
@@ -337,7 +366,6 @@
     document.getElementById('attendanceDate').value = today;
     document.getElementById('reportDate').value = today;
 
-    // --- REALTIME LISTENERS (DUSTRI SYSTEM PAR AUTOMATIC SYNC) ---
     db.ref('employees').on('value', snapshot => {
       employees = snapshot.val() || [];
       renderHomeDepartmentCards();
@@ -664,7 +692,7 @@
       });
 
       if (!reportData.length) {
-        tbody.innerHTML = `<tr><td colspan="10" style="color:#777;">Selected filter ke anusaar koi data nahi mila.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="color:#777;">Selected filter ke anusa koi data nahi mila.</td></tr>`;
         return;
       }
 
