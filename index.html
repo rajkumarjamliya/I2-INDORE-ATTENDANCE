@@ -22,7 +22,7 @@
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: var(--blinkit-light); margin: 0; padding: 12px; color: var(--blinkit-dark); }
 
-    /* BRAND HEADER WITH EXACT IMAGE LOGO COLOURS */
+    /* BRAND HEADER WITH EXACT LOGO COLOURS */
     header {
       background: var(--blinkit-yellow);
       color: var(--blinkit-dark);
@@ -94,16 +94,16 @@
   <header>
     <div class="brand-logo-container">
       <div class="brand-logo-text">blink<span>it</span></div>
-      <div class="brand-cart-icon">🛒</div>
+      <div class="brand-cart-icon"></div>
     </div>
-    <div class="header-subtitle">FC I2 INDORE — Department Attendance & 9-Hour Shift System</div>
+    <div class="header-subtitle">FC I2 INDORE � Department Attendance & Custom Shift System</div>
   </header>
 
   <!-- NAVIGATION TABS -->
   <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('dailyView', this)">📊 Home & Department Summary</button>
-    <button class="tab-btn" onclick="switchTab('employeesView', this)">👤 Employee Master & 9-Hr Shift</button>
-    <button class="tab-btn" onclick="switchTab('reportView', this)">📈 Shift-Wise Present/Absent Report</button>
+    <button class="tab-btn active" onclick="switchTab('dailyView', this)"> Home & Department Summary</button>
+    <button class="tab-btn" onclick="switchTab('employeesView', this)"> Employee Master & Custom Shift</button>
+    <button class="tab-btn" onclick="switchTab('reportView', this)"> Shift-Wise Present/Absent Report</button>
   </div>
 
   <!-- TAB 1: DAILY ATTENDANCE -->
@@ -117,30 +117,30 @@
     <!-- INSIDE DEPARTMENT VIEW -->
     <div id="deptView" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; background: white; padding: 10px; border-radius: 8px; flex-wrap: wrap; gap: 8px;">
-        <button class="btn-main" onclick="showHomeView()">⬅ Back to Home</button>
+        <button class="btn-main" onclick="showHomeView()"> Back to Home</button>
         <h2 id="deptTitle" style="margin:0; font-size: 14px;">INBOUND</h2>
         <input type="date" id="attendanceDate" onchange="renderAttendanceTable()" style="width: auto;">
       </div>
 
       <!-- DEPT PUNCH ENTRY CARD -->
       <div class="card" style="background: #FFFDE7; border-left: 5px solid var(--blinkit-yellow);">
-        <h4 style="margin-top:0;">⚡ Department Quick Punch (ID Enter Karein)</h4>
+        <h4 style="margin-top:0;"> Department Quick Punch (ID Enter Karein)</h4>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
           <input type="text" id="deptPunchEmpId" placeholder="Employee ID (jaise BLK-101)" style="flex: 1; min-width: 200px;">
-          <button class="btn-green" onclick="handleDeptInputPunch('IN')">📥 Punch IN</button>
-          <button class="btn-red" onclick="handleDeptInputPunch('OUT')">📤 Punch OUT</button>
+          <button class="btn-green" onclick="handleDeptInputPunch('IN')"> Punch IN</button>
+          <button class="btn-red" onclick="handleDeptInputPunch('OUT')"> Punch OUT</button>
         </div>
       </div>
 
       <!-- ATTENDANCE TABLE & ABSENT HIGHLIGHT -->
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h4 style="margin:0;">📋 Department Attendance & Absent Contacts</h4>
+          <h4 style="margin:0;"> Department Attendance & Absent Contacts</h4>
           <div>
             <select id="insideStatusFilter" onchange="renderAttendanceTable()" style="padding: 4px;">
               <option value="ALL">All Department Employees</option>
-              <option value="PRESENT">🟢 Present Only</option>
-              <option value="ABSENT">🔴 Absent Only (Highlight Contacts)</option>
+              <option value="PRESENT"> Present Only</option>
+              <option value="ABSENT"> Absent Only (Highlight Contacts)</option>
             </select>
           </div>
         </div>
@@ -150,7 +150,7 @@
               <tr>
                 <th>Emp ID</th>
                 <th>Name & Contact</th>
-                <th>Shift & Role</th>
+                <th>Shift Time & Role</th>
                 <th>Punch In</th>
                 <th>Punch Out</th>
                 <th>Status</th>
@@ -165,10 +165,10 @@
     </div>
   </div>
 
-  <!-- TAB 2: EMPLOYEE MASTER & SHIFT -->
+  <!-- TAB 2: EMPLOYEE MASTER & CUSTOM SHIFT -->
   <div id="employeesView" class="view-section">
     <div class="card" style="max-width: 550px; margin: 0 auto;">
-      <h4 id="empFormTitle">➕ Add / Update Employee (9-Hour Shift)</h4>
+      <h4 id="empFormTitle"> Add / Update Employee & Custom Shift Time</h4>
       <input type="hidden" id="editEmpIndex" value="-1">
       
       <label>Department:</label>
@@ -190,13 +190,19 @@
       <label>Mobile Number:</label>
       <input type="tel" id="newEmpMobile" placeholder="9898XXXXXX">
 
-      <label>Assign 9-Hour Shift:</label>
-      <select id="empShift">
-        <option value="Shift A (06:00 AM - 03:00 PM)">Shift A (06:00 AM - 03:00 PM - 9 Hrs)</option>
-        <option value="Shift B (02:00 PM - 11:00 PM)">Shift B (02:00 PM - 11:00 PM - 9 Hrs)</option>
-        <option value="Shift C (10:00 PM - 07:00 AM)">Shift C (10:00 PM - 07:00 AM - 9 Hrs)</option>
-        <option value="General Shift (09:00 AM - 06:00 PM)">General Shift (09:00 AM - 06:00 PM - 9 Hrs)</option>
-      </select>
+      <label>Shift Name / Title:</label>
+      <input type="text" id="empShiftName" placeholder="e.g. Morning Shift / Shift A">
+
+      <div style="display: flex; gap: 8px;">
+        <div style="flex:1;">
+          <label>Shift Start Time:</label>
+          <input type="time" id="empStartTime" value="06:00">
+        </div>
+        <div style="flex:1;">
+          <label>Shift End Time:</label>
+          <input type="time" id="empEndTime" value="15:00">
+        </div>
+      </div>
 
       <label>Role:</label>
       <select id="empRole">
@@ -207,11 +213,11 @@
         <option value="Guard">Guard</option>
       </select>
 
-      <button class="btn-main" style="width: 100%; margin-top: 10px;" onclick="saveEmployee()">Save Employee Profile</button>
+      <button class="btn-main" style="width: 100%; margin-top: 10px;" onclick="saveEmployee()">Save Employee & Shift Time</button>
     </div>
 
     <div class="card" style="margin-top: 15px;">
-      <h4>📁 Master Directory & Shift Controls</h4>
+      <h4> Master Directory & Shift Controls</h4>
       <div class="table-container">
         <table>
           <thead>
@@ -219,7 +225,7 @@
               <th>Dept</th>
               <th>ID</th>
               <th>Name</th>
-              <th>Shift</th>
+              <th>Shift Details (Time)</th>
               <th>Role</th>
               <th>Mobile</th>
               <th>Actions</th>
@@ -234,33 +240,23 @@
   <!-- TAB 3: REPORTS & EXCEL EXPORT -->
   <div id="reportView" class="view-section">
     <div class="card">
-      <h4>📈 Shift-Wise Present & Absent Filter Data</h4>
+      <h4> Shift-Wise Present & Absent Filter Data</h4>
       <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center;">
         <div>
           <label>Date:</label>
           <input type="date" id="reportDate">
         </div>
         <div>
-          <label>Shift Filter:</label>
-          <select id="reportShiftFilter">
-            <option value="ALL">All Shifts</option>
-            <option value="Shift A (06:00 AM - 03:00 PM)">Shift A (9 Hrs)</option>
-            <option value="Shift B (02:00 PM - 11:00 PM)">Shift B (9 Hrs)</option>
-            <option value="Shift C (10:00 PM - 07:00 AM)">Shift C (9 Hrs)</option>
-            <option value="General Shift (09:00 AM - 06:00 PM)">General Shift (9 Hrs)</option>
-          </select>
-        </div>
-        <div>
           <label>Status Filter:</label>
           <select id="reportStatusFilter">
             <option value="ALL">All (Present + Absent)</option>
-            <option value="PRESENT">🟢 Only Present</option>
-            <option value="ABSENT">🔴 Only Absent</option>
+            <option value="PRESENT"> Only Present</option>
+            <option value="ABSENT"> Only Absent</option>
           </select>
         </div>
         <div style="align-self: flex-end;">
-          <button class="btn-green" onclick="generateReport()">🔍 Filter Data</button>
-          <button class="btn-main" onclick="downloadExcel()">📥 Export Excel</button>
+          <button class="btn-green" onclick="generateReport()"> Filter Data</button>
+          <button class="btn-main" onclick="downloadExcel()"> Export Excel</button>
         </div>
       </div>
 
@@ -272,7 +268,7 @@
               <th>Dept</th>
               <th>Emp ID</th>
               <th>Name</th>
-              <th>Shift</th>
+              <th>Shift Timing</th>
               <th>Role</th>
               <th>Contact</th>
               <th>Time In</th>
@@ -290,8 +286,8 @@
 
   <script>
     const departmentsList = ['Inbound', 'Outbound', 'Dispatch', 'Return', 'Putaway', 'Guard Staff'];
-    let employees = JSON.parse(localStorage.getItem('blinkit_employees_v6')) || [];
-    let attendanceLogs = JSON.parse(localStorage.getItem('blinkit_attendance_v6')) || {};
+    let employees = JSON.parse(localStorage.getItem('blinkit_employees_v8')) || [];
+    let attendanceLogs = JSON.parse(localStorage.getItem('blinkit_attendance_v8')) || {};
     let currentSelectedDept = '';
 
     const today = new Date().toISOString().split('T')[0];
@@ -299,8 +295,8 @@
     document.getElementById('reportDate').value = today;
 
     function saveData() {
-      localStorage.setItem('blinkit_employees_v6', JSON.stringify(employees));
-      localStorage.setItem('blinkit_attendance_v6', JSON.stringify(attendanceLogs));
+      localStorage.setItem('blinkit_employees_v8', JSON.stringify(employees));
+      localStorage.setItem('blinkit_attendance_v8', JSON.stringify(attendanceLogs));
       renderHomeDepartmentCards();
     }
 
@@ -314,25 +310,33 @@
       if (viewId === 'employeesView') renderMasterEmployees();
     }
 
-    function isCurrentShift(shiftName) {
-      const currentHour = new Date().getHours();
-      if (shiftName.includes('Shift A') && currentHour >= 6 && currentHour < 15) return true;
-      if (shiftName.includes('Shift B') && currentHour >= 14 && currentHour < 23) return true;
-      if (shiftName.includes('Shift C') && (currentHour >= 22 || currentHour < 7)) return true;
-      if (shiftName.includes('General') && currentHour >= 9 && currentHour < 18) return true;
-      return false;
+    function isCurrentShiftActive(startTime, endTime) {
+      if (!startTime || !endTime) return false;
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+      const [startH, startM] = startTime.split(':').map(Number);
+      const [endH, endM] = endTime.split(':').map(Number);
+      const startMinutes = startH * 60 + startM;
+      const endMinutes = endH * 60 + endM;
+
+      if (startMinutes <= endMinutes) {
+        return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+      } else {
+        return currentMinutes >= startMinutes || currentMinutes <= endMinutes;
+      }
     }
 
     function handleDeptInputPunch(type) {
       const empId = document.getElementById('deptPunchEmpId').value.trim();
       if (!empId) {
-        alert('⚠️ Kripya Employee ID darj karein!');
+        alert(' Kripya Employee ID darj karein!');
         return;
       }
 
       const emp = employees.find(e => e.id.toLowerCase() === empId.toLowerCase() && e.dept === currentSelectedDept);
       if (!emp) {
-        alert(`❌ Yeh Employee ID "${currentSelectedDept}" vibhag me maujood nahi hai!`);
+        alert(` Yeh Employee ID "${currentSelectedDept}" vibhag me maujood nahi hai!`);
         return;
       }
 
@@ -353,13 +357,13 @@
 
       if (type === 'IN') {
         if (record.timeIn !== '--:--') {
-          alert(`⚠️ IN Punch pahle hi darj hai (${record.timeIn})`);
+          alert(` IN Punch pahle hi darj hai (${record.timeIn})`);
           return;
         }
         record.timeIn = timeString;
       } else if (type === 'OUT') {
         if (record.timeIn === '--:--') {
-          alert("⚠️ Pahle Punch IN karein!");
+          alert(" Pahle Punch IN karein!");
           return;
         }
         record.timeOut = timeString;
@@ -391,7 +395,7 @@
         card.className = 'dept-card-home';
         card.onclick = () => openDepartment(dept);
         card.innerHTML = `
-          <div class="dept-card-title">🏢 ${dept.toUpperCase()} <span>➡️</span></div>
+          <div class="dept-card-title"> ${dept.toUpperCase()} <span></span></div>
           <div class="dept-card-stats">
             <span>Total: ${total}</span>
             <span style="color: var(--blinkit-green);">Present: ${present}</span>
@@ -441,22 +445,22 @@
 
       deptEmployees.forEach(emp => {
         const record = attendanceLogs[selectedDate][emp.id] || { timeIn: '--:--', timeOut: '--:--' };
-        const isActiveShift = isCurrentShift(emp.shift);
+        const isActive = isCurrentShiftActive(emp.startTime, emp.endTime);
         const isPresent = record.timeIn !== '--:--';
 
         const tr = document.createElement('tr');
-        if (isActiveShift) tr.classList.add('active-shift-row');
+        if (isActive) tr.classList.add('active-shift-row');
 
-        let contactDisplay = `<a href="tel:${emp.mobile}" class="call-btn">📞 ${emp.mobile || 'N/A'}</a>`;
+        let contactDisplay = `<a href="tel:${emp.mobile}" class="call-btn"> ${emp.mobile || 'N/A'}</a>`;
         if (!isPresent) {
-          contactDisplay = `<span style="background:#FFEBEE; padding:2px 6px; border-radius:4px; border:1px solid #FFCDD2; display:inline-block;"><a href="tel:${emp.mobile}" class="call-btn" style="background:var(--blinkit-red);">📞 ${emp.mobile || 'Call'}</a></span>`;
+          contactDisplay = `<span style="background:#FFEBEE; padding:2px 6px; border-radius:4px; border:1px solid #FFCDD2; display:inline-block;"><a href="tel:${emp.mobile}" class="call-btn" style="background:var(--blinkit-red);"> ${emp.mobile || 'Call'}</a></span>`;
         }
 
         tr.innerHTML = `
           <td><strong>${emp.id}</strong></td>
           <td>${emp.name} <br> ${contactDisplay}</td>
           <td>
-            <span class="shift-tag ${isActiveShift ? 'active-shift-tag' : ''}">${emp.shift.split(' ')[0]}</span><br>
+            <span class="shift-tag ${isActive ? 'active-shift-tag' : ''}">${emp.shiftName || 'Shift'} (${emp.startTime || '06:00'} - ${emp.endTime || '15:00'})</span><br>
             <span class="role-badge">${emp.role}</span>
           </td>
           <td>${record.timeIn}</td>
@@ -491,7 +495,9 @@
       const id = document.getElementById('newEmpId').value.trim();
       const name = document.getElementById('newEmpName').value.trim();
       const mobile = document.getElementById('newEmpMobile').value.trim();
-      const shift = document.getElementById('empShift').value;
+      const shiftName = document.getElementById('empShiftName').value.trim() || "Shift A";
+      const startTime = document.getElementById('empStartTime').value;
+      const endTime = document.getElementById('empEndTime').value;
       const role = document.getElementById('empRole').value;
 
       if (!id || !name) {
@@ -499,20 +505,22 @@
         return;
       }
 
+      const empData = { dept, id, name, mobile, shiftName, startTime, endTime, role };
+
       if (editIndex === -1) {
         if (employees.some(e => e.id.toLowerCase() === id.toLowerCase())) {
           alert('Yeh Employee ID pahle se maujood hai!');
           return;
         }
-        employees.push({ dept, id, name, mobile, shift, role });
+        employees.push(empData);
       } else {
-        employees[editIndex] = { dept, id, name, mobile, shift, role };
+        employees[editIndex] = empData;
       }
 
       saveData();
       resetEmpForm();
       renderMasterEmployees();
-      alert('✅ Profile aur shift update ho gayi hai!');
+      alert(' Profile aur Custom Shift Time safalpurvak update ho gaya!');
     }
 
     function editEmployee(index) {
@@ -522,9 +530,11 @@
       document.getElementById('newEmpId').value = emp.id;
       document.getElementById('newEmpName').value = emp.name;
       document.getElementById('newEmpMobile').value = emp.mobile;
-      document.getElementById('empShift').value = emp.shift;
+      document.getElementById('empShiftName').value = emp.shiftName || '';
+      document.getElementById('empStartTime').value = emp.startTime || '06:00';
+      document.getElementById('empEndTime').value = emp.endTime || '15:00';
       document.getElementById('empRole').value = emp.role;
-      document.getElementById('empFormTitle').innerText = "✏️ Update Shift / Edit Profile";
+      document.getElementById('empFormTitle').innerText = " Edit Shift Time & Profile";
     }
 
     function resetEmpForm() {
@@ -532,7 +542,8 @@
       document.getElementById('newEmpId').value = '';
       document.getElementById('newEmpName').value = '';
       document.getElementById('newEmpMobile').value = '';
-      document.getElementById('empFormTitle').innerText = "➕ Add / Update Employee (9-Hour Shift)";
+      document.getElementById('empShiftName').value = '';
+      document.getElementById('empFormTitle').innerText = " Add / Update Employee & Custom Shift Time";
     }
 
     function renderMasterEmployees() {
@@ -545,11 +556,11 @@
           <td>${emp.dept}</td>
           <td><strong>${emp.id}</strong></td>
           <td>${emp.name}</td>
-          <td>${emp.shift}</td>
+          <td>${emp.shiftName || 'Shift'} (${emp.startTime} - ${emp.endTime})</td>
           <td><span class="role-badge">${emp.role}</span></td>
           <td>${emp.mobile || 'N/A'}</td>
           <td>
-            <button class="btn-main" style="padding: 3px 8px; font-size: 10px;" onclick="editEmployee(${index})">Shift Change</button>
+            <button class="btn-main" style="padding: 3px 8px; font-size: 10px;" onclick="editEmployee(${index})">Edit Time</button>
             <button class="btn-red" style="padding: 3px 8px; font-size: 10px;" onclick="deleteEmployee(${index})">Delete</button>
           </td>
         `;
@@ -567,7 +578,6 @@
 
     function generateReport() {
       const date = document.getElementById('reportDate').value;
-      const shiftVal = document.getElementById('reportShiftFilter').value;
       const statusVal = document.getElementById('reportStatusFilter').value;
       const tbody = document.getElementById('reportTableBody');
       tbody.innerHTML = '';
@@ -576,27 +586,25 @@
       let found = false;
 
       employees.forEach(emp => {
-        if (shiftVal === 'ALL' || emp.shift === shiftVal) {
-          const rec = dayLog[emp.id] || { timeIn: '--:--', timeOut: '--:--' };
-          const isPresent = rec.timeIn !== '--:--';
+        const rec = dayLog[emp.id] || { timeIn: '--:--', timeOut: '--:--' };
+        const isPresent = rec.timeIn !== '--:--';
 
-          if (statusVal === 'ALL' || (statusVal === 'PRESENT' && isPresent) || (statusVal === 'ABSENT' && !isPresent)) {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${date}</td>
-              <td>${emp.dept}</td>
-              <td>${emp.id}</td>
-              <td>${emp.name}</td>
-              <td>${emp.shift}</td>
-              <td>${emp.role}</td>
-              <td><a href="tel:${emp.mobile}" class="call-btn">📞 ${emp.mobile || 'N/A'}</a></td>
-              <td>${rec.timeIn}</td>
-              <td>${rec.timeOut}</td>
-              <td>${isPresent ? '<strong style="color:green;">PRESENT</strong>' : '<strong style="color:red;">ABSENT</strong>'}</td>
-            `;
-            tbody.appendChild(tr);
-            found = true;
-          }
+        if (statusVal === 'ALL' || (statusVal === 'PRESENT' && isPresent) || (statusVal === 'ABSENT' && !isPresent)) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${date}</td>
+            <td>${emp.dept}</td>
+            <td>${emp.id}</td>
+            <td>${emp.name}</td>
+            <td>${emp.shiftName || 'Shift'} (${emp.startTime} - ${emp.endTime})</td>
+            <td>${emp.role}</td>
+            <td><a href="tel:${emp.mobile}" class="call-btn"> ${emp.mobile || 'N/A'}</a></td>
+            <td>${rec.timeIn}</td>
+            <td>${rec.timeOut}</td>
+            <td>${isPresent ? '<strong style="color:green;">PRESENT</strong>' : '<strong style="color:red;">ABSENT</strong>'}</td>
+          `;
+          tbody.appendChild(tr);
+          found = true;
         }
       });
 
@@ -607,31 +615,28 @@
 
     function downloadExcel() {
       const date = document.getElementById('reportDate').value;
-      const shiftVal = document.getElementById('reportShiftFilter').value;
       const statusVal = document.getElementById('reportStatusFilter').value;
 
       let reportData = [];
       const dayLog = attendanceLogs[date] || {};
 
       employees.forEach(emp => {
-        if (shiftVal === 'ALL' || emp.shift === shiftVal) {
-          const rec = dayLog[emp.id] || { timeIn: '--:--', timeOut: '--:--' };
-          const isPresent = rec.timeIn !== '--:--';
+        const rec = dayLog[emp.id] || { timeIn: '--:--', timeOut: '--:--' };
+        const isPresent = rec.timeIn !== '--:--';
 
-          if (statusVal === 'ALL' || (statusVal === 'PRESENT' && isPresent) || (statusVal === 'ABSENT' && !isPresent)) {
-            reportData.push({
-              "Date": date,
-              "Department": emp.dept,
-              "Employee ID": emp.id,
-              "Name": emp.name,
-              "Shift": emp.shift,
-              "Role": emp.role,
-              "Contact": emp.mobile || 'N/A',
-              "Time In": rec.timeIn,
-              "Time Out": rec.timeOut,
-              "Status": isPresent ? 'PRESENT' : 'ABSENT'
-            });
-          }
+        if (statusVal === 'ALL' || (statusVal === 'PRESENT' && isPresent) || (statusVal === 'ABSENT' && !isPresent)) {
+          reportData.push({
+            "Date": date,
+            "Department": emp.dept,
+            "Employee ID": emp.id,
+            "Name": emp.name,
+            "Shift Timing": `${emp.shiftName || 'Shift'} (${emp.startTime} - ${emp.endTime})`,
+            "Role": emp.role,
+            "Contact": emp.mobile || 'N/A',
+            "Time In": rec.timeIn,
+            "Time Out": rec.timeOut,
+            "Status": isPresent ? 'PRESENT' : 'ABSENT'
+          });
         }
       });
 
